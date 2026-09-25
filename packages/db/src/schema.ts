@@ -98,7 +98,8 @@ export const syncCursors = pgTable(
   (table) => [primaryKey({ columns: [table.chainId, table.address] })],
 );
 
-// ◆ deviation, usd is nullable until a price bucket resolves for that token/hour
+// ◆ deviation, usd null caches "no price available" for that token/hour (a
+// definite negative, not merely unresolved — spec deviation 4)
 export const prices = pgTable(
   'prices',
   {
@@ -143,7 +144,8 @@ export const labels = pgTable(
     kind: labelKind().notNull(),
     entity: text().notNull(),
     confidence: real().notNull(),
-    sourceUrl: text().notNull(),
+    // ◆ R6, heuristic labels have no source URL
+    sourceUrl: text(),
     updatedAt: timestamp({ withTimezone: true, mode: 'date' }).notNull(),
   },
   (table) => [

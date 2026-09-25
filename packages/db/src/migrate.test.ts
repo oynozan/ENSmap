@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { closeDb, createDb, type Db } from './client.ts';
 import { migrate } from './migrate.ts';
-import { bindings, names, transfers } from './schema.ts';
+import { bindings, labels, names, transfers } from './schema.ts';
 
 describe('migrate', () => {
   let db: Db;
@@ -128,6 +128,25 @@ describe('migrate', () => {
     await db.insert(transfers).values(row);
 
     await expect(db.insert(transfers).values(row)).rejects.toThrow();
+  });
+
+  it('accepts a labels row with source_url null for a heuristic label', async () => {
+    await db.insert(labels).values({
+      chainId: 1,
+      address: '0x0000000000000000000000000000000000000001',
+      source: 'heuristic',
+      kind: 'cex_hot',
+      entity: 'example',
+      confidence: 0.5,
+      sourceUrl: null,
+      updatedAt: new Date('2024-01-01T00:00:00Z'),
+    });
+
+    const rows = await db
+      .select()
+      .from(labels)
+      .where(eq(labels.source, 'heuristic'));
+    expect(rows[0]?.sourceUrl).toBeNull();
   });
 
   it('conflicts two bindings rows that differ only by both having a null valid_from', async () => {
