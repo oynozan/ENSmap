@@ -28,7 +28,7 @@ CREATE TABLE "labels" (
 	"kind" "label_kind" NOT NULL,
 	"entity" text NOT NULL,
 	"confidence" real NOT NULL,
-	"source_url" text NOT NULL,
+	"source_url" text,
 	"updated_at" timestamp with time zone NOT NULL,
 	CONSTRAINT "labels_chain_id_address_source_pk" PRIMARY KEY("chain_id","address","source")
 );

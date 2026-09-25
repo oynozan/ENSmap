@@ -1,7 +1,8 @@
-import { describe, expect, it } from 'vitest';
+import { Command } from 'commander';
+import { describe, expect, it, vi } from 'vitest';
 
 import pkg from '../package.json' with { type: 'json' };
-import { runCli, type CliIO } from './program.ts';
+import { CliError, runCli, type CliIO } from './program.ts';
 
 function createIO(): CliIO & { output: string[]; errors: string[] } {
   const output: string[] = [];
@@ -31,5 +32,27 @@ describe('runCli', () => {
 
     expect(code).toBe(0);
     expect(io.output.join('')).toContain('ensmap');
+  });
+
+  it('writes the CliError message to stderr and returns its exit code', async () => {
+    const io = createIO();
+    const spy = vi
+      .spyOn(Command.prototype, 'parseAsync')
+      .mockRejectedValueOnce(new CliError('boom', 2));
+
+    const code = await runCli([], io);
+
+    spy.mockRestore();
+    expect(code).toBe(2);
+    expect(io.errors.join('')).toContain('boom');
+  });
+
+  it('returns 1 and prints the unknown option message for an unrecognized flag', async () => {
+    const io = createIO();
+
+    const code = await runCli(['--bogus'], io);
+
+    expect(code).toBe(1);
+    expect(io.errors.join('')).toContain('unknown option');
   });
 });

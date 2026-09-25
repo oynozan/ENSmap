@@ -50,6 +50,7 @@ export async function runCli(
     return 0;
   } catch (error) {
     if (error instanceof CliError) {
+      io.stderr(`${error.message}\n`);
       return error.exitCode;
     }
     if (error instanceof CommanderError) {
