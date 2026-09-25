@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "typecheck": "pnpm -r typecheck",
     "test": "vitest run",
-    "ci": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run test",
+    "db:drift": "pnpm --filter @ensmap/db exec drizzle-kit generate && test -z \"$(git status --porcelain packages/db/drizzle)\"",
+    "ci": "pnpm run format:check && pnpm run lint && pnpm run typecheck && pnpm run db:drift && pnpm run test",
     "ensmap": "tsx packages/cli/src/main.ts"
   },
   "devDependencies": {
