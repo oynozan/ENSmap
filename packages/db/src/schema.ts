@@ -24,11 +24,12 @@ export const names = pgTable(
     id: text().notNull(),
     name: text().notNull(),
     parentIds: text().array().notNull(),
-    registry: text().notNull(),
-    owner: text().notNull(),
-    resolver: text().notNull(),
-    registeredAt: timestamp({ withTimezone: true, mode: 'date' }).notNull(),
-    expiry: timestamp({ withTimezone: true, mode: 'date' }).notNull(),
+    // ◆ R6, registry/owner/resolver/registered_at/expiry are nullable, the source can omit them
+    registry: text(),
+    owner: text(),
+    resolver: text(),
+    registeredAt: timestamp({ withTimezone: true, mode: 'date' }),
+    expiry: timestamp({ withTimezone: true, mode: 'date' }),
   },
   (table) => [primaryKey({ columns: [table.namespace, table.id] })],
 );
@@ -69,7 +70,8 @@ export const transfers = pgTable(
     block: bigint({ mode: 'bigint' }).notNull(),
     timestamp: timestamp({ withTimezone: true, mode: 'date' }).notNull(),
     fromAddress: text().notNull(),
-    toAddress: text().notNull(),
+    // ◆ R6, to_address is null for a contract creation
+    toAddress: text(),
     asset: text().notNull(),
     rawValue: numeric({ precision: 78, scale: 0, mode: 'string' }).notNull(),
     decimals: integer(),

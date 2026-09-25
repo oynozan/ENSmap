@@ -44,11 +44,11 @@ CREATE TABLE "names" (
 	"id" text NOT NULL,
 	"name" text NOT NULL,
 	"parent_ids" text[] NOT NULL,
-	"registry" text NOT NULL,
-	"owner" text NOT NULL,
-	"resolver" text NOT NULL,
-	"registered_at" timestamp with time zone NOT NULL,
-	"expiry" timestamp with time zone NOT NULL,
+	"registry" text,
+	"owner" text,
+	"resolver" text,
+	"registered_at" timestamp with time zone,
+	"expiry" timestamp with time zone,
 	CONSTRAINT "names_namespace_id_pk" PRIMARY KEY("namespace","id")
 );
 --> statement-breakpoint
@@ -75,7 +75,7 @@ CREATE TABLE "transfers" (
 	"block" bigint NOT NULL,
 	"timestamp" timestamp with time zone NOT NULL,
 	"from_address" text NOT NULL,
-	"to_address" text NOT NULL,
+	"to_address" text,
 	"asset" text NOT NULL,
 	"raw_value" numeric(78, 0) NOT NULL,
 	"decimals" integer,

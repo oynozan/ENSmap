@@ -24,7 +24,8 @@ describe('createDb', () => {
 
     const db = await createDb(`pglite:${relativePath}`);
     try {
-      expect(existsSync(dataDir)).toBe(true);
+      // PG_VERSION only exists once PGlite initializes, not just on mkdirSync
+      expect(existsSync(join(dataDir, 'PG_VERSION'))).toBe(true);
     } finally {
       await closeDb(db);
     }
@@ -44,5 +45,21 @@ describe('createDb', () => {
       (caught: unknown) => caught,
     );
     expect(String(error)).not.toContain('secret');
+  });
+
+  it('throws naming DATABASE_URL for an empty pglite: path', async () => {
+    await expect(createDb('pglite:')).rejects.toThrow(/DATABASE_URL/);
+  });
+
+  it('throws naming DATABASE_URL for pglite:.', async () => {
+    await expect(createDb('pglite:.')).rejects.toThrow(/DATABASE_URL/);
+  });
+
+  it('throws naming DATABASE_URL for a path that resolves to workspaceRoot()', async () => {
+    await expect(createDb('pglite:.data/..')).rejects.toThrow(/DATABASE_URL/);
+  });
+
+  it('throws naming DATABASE_URL for a pglite://<path> double-slash prefix', async () => {
+    await expect(createDb('pglite://.data/x')).rejects.toThrow(/DATABASE_URL/);
   });
 });

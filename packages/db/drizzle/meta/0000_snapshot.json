@@ -1,5 +1,5 @@
 {
-  "id": "490b3812-6ade-4bee-b0b9-fa01bbd6d8e5",
+  "id": "a4411a9d-c5f6-4f3f-82b5-aa05b6cf3628",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -268,31 +268,31 @@
           "name": "registry",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "owner": {
           "name": "owner",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "resolver": {
           "name": "resolver",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "registered_at": {
           "name": "registered_at",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "expiry": {
           "name": "expiry",
           "type": "timestamp with time zone",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         }
       },
       "indexes": {},
@@ -446,7 +446,7 @@
           "name": "to_address",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "asset": {
           "name": "asset",

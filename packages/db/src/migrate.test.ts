@@ -1,9 +1,9 @@
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { closeDb, createDb, type Db } from './client.ts';
 import { migrate } from './migrate.ts';
-import { bindings, transfers } from './schema.ts';
+import { bindings, names, transfers } from './schema.ts';
 
 describe('migrate', () => {
   let db: Db;
@@ -60,6 +60,54 @@ describe('migrate', () => {
 
     const rows = await db.select().from(transfers);
     expect(rows[0]?.rawValue).toBe(maxUint256);
+  });
+
+  it('accepts a names row with registry, owner, resolver, registered_at and expiry null', async () => {
+    await db.insert(names).values({
+      namespace: 'mainnet',
+      id: 'name-source-omitted-fields',
+      name: 'example.eth',
+      parentIds: [],
+      registry: null,
+      owner: null,
+      resolver: null,
+      registeredAt: null,
+      expiry: null,
+    });
+
+    const rows = await db
+      .select()
+      .from(names)
+      .where(eq(names.id, 'name-source-omitted-fields'));
+    expect(rows[0]).toMatchObject({
+      registry: null,
+      owner: null,
+      resolver: null,
+      registeredAt: null,
+      expiry: null,
+    });
+  });
+
+  it('accepts a transfers row with to_address null for a contract creation', async () => {
+    await db.insert(transfers).values({
+      chainId: 1,
+      uniqueId: 'tx-contract-creation',
+      txHash: '0xdef',
+      block: 1n,
+      timestamp: new Date('2024-01-01T00:00:00Z'),
+      fromAddress: '0x0000000000000000000000000000000000000001',
+      toAddress: null,
+      asset: 'native',
+      rawValue: '0',
+      decimals: 18,
+      category: 'external',
+    });
+
+    const rows = await db
+      .select()
+      .from(transfers)
+      .where(eq(transfers.uniqueId, 'tx-contract-creation'));
+    expect(rows[0]?.toAddress).toBeNull();
   });
 
   it('raises a unique violation for a duplicate (chain_id, unique_id)', async () => {
