@@ -1,0 +1,39 @@
+packages:
+  - packages/*
+  - apps/*
+
+catalog:
+  typescript: 6.0.3
+  tsx: 4.23.15
+  vitest: 5.0.2
+  vite: 8.3.1
+  eslint: 10.11.0
+  typescript-eslint: 8.70.1
+  prettier: 3.9.9
+  zod: 4.6.5
+  graphql: 17.0.2
+  viem: 2.56.9
+  '@adraffy/ens-normalize': 1.11.1
+  p-limit: 7.3.3
+  commander: 15.0.0
+  drizzle-orm: 0.45.3
+  drizzle-kit: 0.31.11
+  '@electric-sql/pglite': 0.5.8
+  pg: 8.23.0
+  '@types/pg': 8.23.1
+  hono: 4.13.9
+  '@hono/node-server': 2.1.1
+  react: 19.3.0
+  react-dom: 19.3.0
+  '@vitejs/plugin-react': 6.1.1
+  '@types/react': 19.3.0
+  '@types/react-dom': 19.3.0
+  '@types/node': 24.13.6
+
+allowBuilds:
+  esbuild: true
+
+minimumReleaseAgeExclude:
+  - '@vitest/mocker@5.0.2'
+  - '@vitest/spy@5.0.2'
+  - vitest@5.0.2

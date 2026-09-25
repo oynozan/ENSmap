@@ -1,0 +1,9 @@
+pnpm-lock.yaml
+packages/db/drizzle/
+**/test/fixtures/
+**/*.introspection.json
+**/dist/
+docs/spec.md
+
+# SDD process inputs (task briefs), not project source.
+.superpowers/
