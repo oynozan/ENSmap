@@ -1,3 +1,7 @@
 import process from 'node:process';
 
-process.env['ENSMAP_FIXTURES'] ??= 'replay';
+// ??= leaves an explicitly blank ENSMAP_FIXTURES= in place; loadEnv then
+// treats that as unset, bypassing this default. Treat unset and blank alike.
+if (!process.env['ENSMAP_FIXTURES']) {
+  process.env['ENSMAP_FIXTURES'] = 'replay';
+}
