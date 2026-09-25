@@ -7,8 +7,12 @@ plan and spec deviations.
 
 ## Setup
 
-- Node 24.21+ (see `.nvmrc`), pnpm 12.6 (`corepack enable pnpm`, or
-  `corepack pnpm@12.6.0 <command>` if that needs elevated permissions).
+- Node >=24.12 (see `.nvmrc` and `engines`), pnpm 12.6 (`corepack enable
+  pnpm`, or `corepack pnpm@12.6.0 <command>` if that needs elevated
+  permissions).
+- pnpm may not be on `PATH`; use `corepack pnpm@12.6.0 …`, or
+  `corepack enable pnpm` if you have permission to. `pnpm ensmap …` runs
+  from the repo root; from a subdirectory use `pnpm -w ensmap …`.
 - `pnpm install`
 - Copy `.env.example` to `.env` and fill in what you need. Every variable is
   optional; without credentials ENSmap runs against recorded fixtures.
@@ -17,15 +21,18 @@ plan and spec deviations.
 
 - `packages/core`: adapters, pipeline, classification, aggregation and graph
   builder. Runs offline against recorded fixtures.
-- `packages/cli` (later phase): `ensmap tree | bonds | labels | map <name>`.
-- `apps/api` (later phase): HTTP API, Postgres with Drizzle migrations.
-- `apps/web` (later phase): Vite + React map UI.
+- `packages/db`: Postgres/PGlite schema and Drizzle migrations.
+- `packages/cli`: `ensmap tree | bonds | labels | map <name>`.
+- `apps/api`: HTTP API, Postgres with Drizzle migrations.
+- `apps/web`: Vite + React map UI.
 
 ## Scripts
 
 - `pnpm run format` / `pnpm run format:check`: Prettier.
 - `pnpm run lint`: ESLint.
-- `pnpm run typecheck`: `tsc --noEmit` across all packages.
+- `pnpm run typecheck`: `tsc -p tsconfig.json` per package (`apps/web` also
+  runs `vite build`).
 - `pnpm run test`: Vitest across all packages.
-- `pnpm run ci`: format:check, then lint, then typecheck, then test.
-- `pnpm run ensmap`: run the CLI (`packages/cli`, added in a later phase).
+- `pnpm run ci`: format:check, then lint, then typecheck, then db:drift,
+  then test.
+- `pnpm run ensmap`: run the CLI (`packages/cli`).
