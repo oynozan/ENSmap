@@ -191,19 +191,22 @@ export function createHttpClient(opts: {
     const { response, text } = await send(req, target);
     const { status, headers } = response;
     const parsed = parseJson(text);
+    const retryableStatus = RETRYABLE_STATUSES.has(status) || status >= 500;
 
     const classified =
       req.classify?.(status, parsed.ok ? parsed.value : text, headers) ?? null;
     if (classified !== null) {
+      // classify may upgrade a status to retryable, never downgrade one
+      const retryable = classified.retryable || retryableStatus;
       throw fail(`${classified.message} (${target})`, {
         status,
-        retryable: classified.retryable,
-        retryAfterMs:
-          classified.retryAfterMs ??
-          (classified.retryable ? parseRetryAfter(headers, now()) : null),
+        retryable,
+        retryAfterMs: retryable
+          ? (classified.retryAfterMs ?? parseRetryAfter(headers, now()))
+          : null,
       });
     }
-    if (RETRYABLE_STATUSES.has(status) || status >= 500) {
+    if (retryableStatus) {
       throw fail(`HTTP ${status} for ${target}${snippet(text)}`, {
         status,
         retryable: true,

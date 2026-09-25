@@ -287,6 +287,27 @@ describe('createHttpClient retries and limits', () => {
     expect(error.message).toContain('nope');
   });
 
+  it('never lets classify downgrade a retryable status', async () => {
+    const classify: Classifier = (status) =>
+      new ProviderError('fatal by body', {
+        provider: '',
+        status,
+        retryable: false,
+        retryAfterMs: null,
+      });
+    const { http, calls, sleeps } = setup([
+      { status: 429, headers: { 'retry-after': '2' } },
+      { status: 502 },
+    ]);
+
+    const error = await failure(http.json({ ...REQ, classify }, OK));
+
+    expect(error).toMatchObject({ status: 502, retryable: true });
+    expect(error.message).toContain('fatal by body');
+    expect(calls).toHaveLength(LIMITS.retries + 1);
+    expect(sleeps).toEqual([2000, 100, 200]);
+  });
+
   it('caps Retry-After at maxDelayMs', async () => {
     const { http, sleeps } = setup(
       [
