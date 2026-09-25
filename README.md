@@ -20,14 +20,13 @@ plan and spec deviations.
 - `packages/db`: Postgres/PGlite schema and Drizzle migrations.
 - `packages/cli`: `ensmap tree | bonds | labels | map <name>`.
 - `apps/api`: HTTP API, Postgres with Drizzle migrations.
-- `apps/web`: Vite + React map UI.
+- `apps/web`: not started yet. The frontend stays empty until the UI phase.
 
 ## Scripts
 
 - `pnpm run format` / `pnpm run format:check`: Prettier.
 - `pnpm run lint`: ESLint.
-- `pnpm run typecheck`: `tsc -p tsconfig.json` per package (`apps/web` also
-  runs `vite build`).
+- `pnpm run typecheck`: `tsc -p tsconfig.json` per package.
 - `pnpm run test`: Vitest across all packages.
 - `pnpm run ci`: format:check, then lint, then typecheck, then db:drift,
   then test.
