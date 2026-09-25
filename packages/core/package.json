@@ -11,7 +11,9 @@
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
+    "@adraffy/ens-normalize": "catalog:",
     "p-limit": "catalog:",
+    "viem": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
