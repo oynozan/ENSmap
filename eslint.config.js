@@ -2,14 +2,21 @@ import { defineConfig, globalIgnores } from 'eslint/config';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig(
-  globalIgnores(['**/dist/**']),
+  globalIgnores(['**/dist/**', '**/coverage/**']),
   tseslint.configs.strictTypeChecked,
   {
+    linterOptions: { reportUnusedDisableDirectives: 'error' },
     languageOptions: {
       parserOptions: {
         projectService: { allowDefaultProject: ['*.js', '*.ts'] },
         tsconfigRootDir: import.meta.dirname,
       },
+    },
+    rules: {
+      '@typescript-eslint/restrict-template-expressions': [
+        'error',
+        { allowNumber: true },
+      ],
     },
   },
   // no-floating-promises and no-misused-promises are already 'error' in
