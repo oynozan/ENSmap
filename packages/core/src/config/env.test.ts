@@ -59,6 +59,32 @@ describe('loadEnv', () => {
     expect(() => loadEnv(blankEnv)).not.toThrow();
     expect(loadEnv(blankEnv)).toEqual(loadEnv({}));
   });
+
+  it('rejects a javascript: RPC_URL_1', () => {
+    expect(() =>
+      loadEnv({ RPC_URL_1: 'javascript:alert(1)' }),
+    ).toThrow(/RPC_URL_1/);
+  });
+
+  it('rejects a file: RPC_URL_1', () => {
+    expect(() => loadEnv({ RPC_URL_1: 'file:///etc/passwd' })).toThrow(
+      /RPC_URL_1/,
+    );
+  });
+
+  it('accepts a Postgres DATABASE_URL with a query string', () => {
+    const url = 'postgres://u:p@/db?host=/var/run/postgresql';
+    expect(loadEnv({ DATABASE_URL: url }).DATABASE_URL).toBe(url);
+  });
+
+  it('never includes the offending value in a rejection message', () => {
+    expect(() => loadEnv({ RPC_URL_1: 'javascript:alert(1)' })).not.toThrow(
+      /javascript:alert/,
+    );
+    expect(() => loadEnv({ RPC_URL_1: 'file:///etc/passwd' })).not.toThrow(
+      /etc\/passwd/,
+    );
+  });
 });
 
 describe('requireEnv', () => {

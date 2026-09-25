@@ -9,20 +9,22 @@ const fixturesMode = z.enum(['record', 'replay', 'off']);
 export const EnvSchema = z.object({
   // Spec ground rules (section 1): secrets that never reach the browser.
   ALCHEMY_API_KEY: z.string().optional(),
-  ENSNODE_URL_MAINNET: z.url().optional(),
-  ENSNODE_URL_SEPOLIA_V2: z.url().optional(),
+  ENSNODE_URL_MAINNET: z.httpUrl().optional(),
+  ENSNODE_URL_SEPOLIA_V2: z.httpUrl().optional(),
   DUNE_API_KEY: z.string().optional(),
   BITQUERY_API_KEY: z.string().optional(),
-  DATABASE_URL: z.url().optional(),
+  // Not a URL type: DATABASE_URL also accepts pglite:<path> and memory:, and
+  // createDb() already validates the scheme without echoing the value.
+  DATABASE_URL: z.string().min(1).optional(),
 
   // Spec deviation 2: subgraph / graphql.ens.dev source config and RPC URLs.
   GRAPH_API_KEY: z.string().optional(),
   ENS_SOURCE_KIND_MAINNET: ensSourceKind.optional(),
   ENS_SOURCE_KIND_SEPOLIA_V2: ensSourceKind.optional(),
-  ENS_SOURCE_URL_MAINNET: z.url().optional(),
-  ENS_SOURCE_URL_SEPOLIA_V2: z.url().optional(),
-  RPC_URL_1: z.url().optional(),
-  RPC_URL_11155111: z.url().optional(),
+  ENS_SOURCE_URL_MAINNET: z.httpUrl().optional(),
+  ENS_SOURCE_URL_SEPOLIA_V2: z.httpUrl().optional(),
+  RPC_URL_1: z.httpUrl().optional(),
+  RPC_URL_11155111: z.httpUrl().optional(),
 
   ENSMAP_FIXTURES: fixturesMode.optional(),
 });
