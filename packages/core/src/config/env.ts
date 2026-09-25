@@ -32,7 +32,12 @@ export type Env = z.infer<typeof EnvSchema>;
 export function loadEnv(
   source: Record<string, string | undefined> = process.env,
 ): Env {
-  const result = EnvSchema.safeParse(source);
+  // A copied .env.example (or any unset shell var) reaches here as ''.
+  // Treat that as absent rather than an invalid URL/enum value.
+  const withoutBlanks = Object.fromEntries(
+    Object.entries(source).filter(([, value]) => value !== ''),
+  );
+  const result = EnvSchema.safeParse(withoutBlanks);
   if (!result.success) {
     // Keys only: values may be secrets (RPC_URL_*, ENS_SOURCE_URL_*, DATABASE_URL, ...)
     // and must never appear in a thrown error message.

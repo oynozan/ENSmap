@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { parseEnv } from 'node:util';
+
 import { describe, expect, it } from 'vitest';
 
-import { loadEnv, requireEnv } from './env.ts';
+import { loadEnv, requireEnv, workspaceRoot } from './env.ts';
 
 describe('loadEnv', () => {
   it('returns every key undefined when the source is empty', () => {
@@ -40,6 +44,21 @@ describe('loadEnv', () => {
       /ENS_SOURCE_KIND_MAINNET/,
     );
   });
+
+  it('treats a blank value as unset rather than an invalid URL', () => {
+    expect(loadEnv({ RPC_URL_1: '' }).RPC_URL_1).toBeUndefined();
+  });
+
+  it('does not throw for an env shaped like a copied .env.example (every key blank)', () => {
+    const exampleText = readFileSync(
+      join(workspaceRoot(), '.env.example'),
+      'utf8',
+    );
+    const blankEnv = parseEnv(exampleText);
+
+    expect(() => loadEnv(blankEnv)).not.toThrow();
+    expect(loadEnv(blankEnv)).toEqual(loadEnv({}));
+  });
 });
 
 describe('requireEnv', () => {
@@ -47,5 +66,11 @@ describe('requireEnv', () => {
     expect(() => requireEnv(loadEnv({}), 'ALCHEMY_API_KEY')).toThrow(
       'Missing required env var ALCHEMY_API_KEY',
     );
+  });
+
+  it('throws on a blank value instead of returning an empty string', () => {
+    expect(() =>
+      requireEnv(loadEnv({ ALCHEMY_API_KEY: '' }), 'ALCHEMY_API_KEY'),
+    ).toThrow('Missing required env var ALCHEMY_API_KEY');
   });
 });
