@@ -7,12 +7,8 @@ plan and spec deviations.
 
 ## Setup
 
-- Node >=24.12 (see `.nvmrc` and `engines`), pnpm 12.6 (`corepack enable
-  pnpm`, or `corepack pnpm@12.6.0 <command>` if that needs elevated
-  permissions).
-- pnpm may not be on `PATH`; use `corepack pnpm@12.6.0 …`, or
-  `corepack enable pnpm` if you have permission to. `pnpm ensmap …` runs
-  from the repo root; from a subdirectory use `pnpm -w ensmap …`.
+- Node >=24.12 (see `.nvmrc` and `engines`), pnpm 12.6 (`corepack enable pnpm`, or `corepack pnpm@12.6.0 <command>` if that needs elevated permissions).
+- pnpm may not be on `PATH`; use `corepack pnpm@12.6.0 …`, or `corepack enable pnpm` if you have permission to. `pnpm ensmap …` runs from the repo root; from a subdirectory use `pnpm -w ensmap …`.
 - `pnpm install`
 - Copy `.env.example` to `.env` and fill in what you need. Every variable is
   optional; without credentials ENSmap runs against recorded fixtures.

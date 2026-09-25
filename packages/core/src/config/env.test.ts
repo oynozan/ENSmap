@@ -61,9 +61,9 @@ describe('loadEnv', () => {
   });
 
   it('rejects a javascript: RPC_URL_1', () => {
-    expect(() =>
-      loadEnv({ RPC_URL_1: 'javascript:alert(1)' }),
-    ).toThrow(/RPC_URL_1/);
+    expect(() => loadEnv({ RPC_URL_1: 'javascript:alert(1)' })).toThrow(
+      /RPC_URL_1/,
+    );
   });
 
   it('rejects a file: RPC_URL_1', () => {
