@@ -11,12 +11,14 @@ plan and spec deviations.
 - pnpm may not be on `PATH`; use `corepack pnpm@12.6.0 …`, or `corepack enable pnpm` if you have permission to. `pnpm ensmap …` runs from the repo root; from a subdirectory use `pnpm -w ensmap …`.
 - `pnpm install`
 - Copy `.env.example` to `.env` and fill in what you need. Every variable is
-  optional; without credentials ENSmap runs against recorded fixtures.
+  optional; without credentials the CLI calls keyless, rate-limited public
+  endpoints live. Only the tests replay recorded fixtures (see
+  `ENSMAP_FIXTURES` under [Environment](#environment)).
 
 ## Workspace layout
 
 - `packages/core`: adapters, pipeline, classification, aggregation and graph
-  builder. Runs offline against recorded fixtures.
+  builder. Its tests run offline against recorded fixtures.
 - `packages/db`: Postgres/PGlite schema and Drizzle migrations.
 - `packages/cli`: `ensmap tree <name>` today; `bonds`, `labels` and `map`
   arrive in later phases.
