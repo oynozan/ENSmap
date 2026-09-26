@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { loadEnv, resolveNamespace } from '../config/index.ts';
 import { parseNameInput, type InterpretedName } from '../ens/names.ts';
+import { ProviderError } from '../http/client.ts';
 import { CallCounter } from '../http/counter.ts';
 import {
   createFakeChainReader,
@@ -154,7 +155,13 @@ function depsOf(
   },
   notices: string[] = [],
 ): NamespaceDeps {
-  return { names: world.source, ens: world.ens, chain: world.chain, notices };
+  return {
+    names: world.source,
+    ens: world.ens,
+    chain: world.chain,
+    notices,
+    secrets: [],
+  };
 }
 
 // Every call lands in one log, labelled by its pipeline step
@@ -201,6 +208,7 @@ function loggedDeps(
       },
     },
     notices: [],
+    secrets: [],
   };
 }
 
@@ -299,6 +307,60 @@ describe('buildNameMap', () => {
     expect(result.warnings).toEqual([
       'no block time from the RPC for 1 of 1 binding start blocks, likely pruned history; those bindings use the registration date',
     ]);
+  });
+
+  it('falls back to registration dates with a redacted warning when record history fails', async () => {
+    const world = rWorld();
+    const failure = new ProviderError(
+      'fake: HTTP 500 from https://x.test/k3y',
+      {
+        provider: 'fake',
+        status: 500,
+        retryable: true,
+      },
+    );
+
+    const result = await buildNameMap(
+      {
+        ...depsOf(world),
+        names: {
+          ...world.source,
+          recordHistory: () => Promise.reject(failure),
+        },
+        secrets: ['/k3y'],
+      },
+      params('r.eth'),
+      new CallCounter(),
+    );
+
+    expect(result.bindings.map((b) => [b.nameId, b.windowSource])).toEqual([
+      ['a', 'unknown'],
+      ['b', 'unknown'],
+      ['c', 'registration'],
+    ]);
+    expect(result.warnings).toEqual([
+      'record history unavailable from fake (fake: HTTP 500 from https://x.test[redacted]); bindings use the registration date',
+    ]);
+    expect(world.chain.calls).toEqual([]);
+  });
+
+  it('rethrows a record history failure that is not a ProviderError', async () => {
+    const world = rWorld();
+    const failure = new Error('boom');
+
+    const build = buildNameMap(
+      {
+        ...depsOf(world),
+        names: {
+          ...world.source,
+          recordHistory: () => Promise.reject(failure),
+        },
+      },
+      params('r.eth'),
+      new CallCounter(),
+    );
+
+    await expect(build).rejects.toBe(failure);
   });
 
   it('skips primary names, history and block times when nothing is bound', async () => {

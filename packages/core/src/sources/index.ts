@@ -81,5 +81,6 @@ export function createNamespaceDeps(
     ens: createEnsResolver(client, { concurrency }),
     chain: createChainReader(client, { concurrency }),
     notices: noticesFor(cfg),
+    secrets: cfg.secrets,
   };
 }

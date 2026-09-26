@@ -222,6 +222,48 @@ describe('ensmap tree argument and provider errors', () => {
     expect(stderr).toContain('GRAPH_API_KEY');
     expect(stderr).toContain(`API calls: ens-subgraph=${retries + 1}`);
   });
+
+  it('exits 0 with registration dates and a warning when record history fails', async () => {
+    const replay = createFixtureFetch({
+      dir: FIXTURES_DIR,
+      mode: 'replay',
+      secrets: [],
+    });
+    let historyCalls = 0;
+    const historyDown: typeof fetch = async (input, init) => {
+      const request = new Request(input, init);
+      if ((await request.clone().text()).includes('query NodeHistory')) {
+        historyCalls += 1;
+        return new Response('upstream down', { status: 500 });
+      }
+      return replay(request);
+    };
+
+    // Fixtures off, so history fails while every other call replays
+    const { code, stdout } = await run(
+      ['tree', 'seller-a.eth', '-n', 'sepolia-v2', '--json'],
+      {
+        env: loadEnv({ ENSMAP_FIXTURES: 'off' }),
+        fetch: historyDown,
+        sleep: () => Promise.resolve(),
+        now: () => NOW,
+      },
+    );
+
+    expect(code).toBe(0);
+    expect(historyCalls).toBeGreaterThan(0);
+    const map = NameMapJson.parse(JSON.parse(stdout));
+    expect(map.bindings.map((binding) => binding.windowSource)).toEqual([
+      'registration',
+      'registration',
+    ]);
+    const warning = map.warnings.find((line) =>
+      line.startsWith('record history unavailable'),
+    );
+    expect(warning).toMatch(
+      /^record history unavailable from ens-dev-graphql \(.+\); bindings use the registration date$/,
+    );
+  });
 });
 
 /* Human format */

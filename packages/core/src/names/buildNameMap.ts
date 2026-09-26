@@ -8,7 +8,9 @@
  */
 import type { NamespaceId } from '../config/namespaces.ts';
 import { isResolvable, type InterpretedName } from '../ens/names.ts';
+import { ProviderError } from '../http/client.ts';
 import type { CallCounter } from '../http/counter.ts';
+import { redact } from '../http/redact.ts';
 import type { ChainReader } from '../rpc/chainReader.ts';
 import type { EnsResolver, Resolution } from '../rpc/ensResolver.ts';
 import {
@@ -32,6 +34,7 @@ export interface NamespaceDeps {
   ens: EnsResolver;
   chain: ChainReader;
   notices: string[];
+  secrets: readonly string[];
 }
 
 export interface NameMapResult {
@@ -66,6 +69,32 @@ function boundNodes(
     const resolution = resolutions.get(node.name);
     return resolution?.address != null && !isAliasUnresolved(node, resolution);
   });
+}
+
+// A failed history read costs the windows their precision, not the map
+async function readHistory(
+  deps: NamespaceDeps,
+  bound: readonly TreeNode[],
+): Promise<{
+  history: Map<string, RecordHistory> | null;
+  warning: string | null;
+}> {
+  if (bound.length === 0) {
+    return { history: null, warning: null };
+  }
+  try {
+    const records = bound.map((node) => node.record);
+    return { history: await deps.names.recordHistory(records), warning: null };
+  } catch (error) {
+    if (!(error instanceof ProviderError)) {
+      throw error;
+    }
+    const message = redact(error.message, deps.secrets);
+    return {
+      history: null,
+      warning: `record history unavailable from ${deps.names.id} (${message}); bindings use the registration date`,
+    };
+  }
 }
 
 // Blocks whose binding start carries no timestamp, as ENSv1 events do not
@@ -164,10 +193,7 @@ export async function buildNameMap(
       : await deps.ens.primaryNames(wallets);
 
   const bound = boundNodes(tree, resolutions);
-  const history =
-    bound.length === 0
-      ? null
-      : await deps.names.recordHistory(bound.map((node) => node.record));
+  const { history, warning: historyWarning } = await readHistory(deps, bound);
 
   const missing = blocksWithoutTime(bound, resolutions, history);
   const blockTimes =
@@ -195,6 +221,9 @@ export async function buildNameMap(
   );
 
   const warnings = [...deps.notices];
+  if (historyWarning !== null) {
+    warnings.push(historyWarning);
+  }
   const untimed = missing.filter((block) => !blockTimes.has(block)).length;
   if (untimed > 0) {
     warnings.push(
