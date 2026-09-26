@@ -9,6 +9,7 @@ import { parseArgs } from 'node:util';
 import { loadDotEnv, loadEnv } from '@ensmap/core/config';
 import { chromium, type Browser, type Page } from 'playwright-core';
 
+import { HORIZONTAL_OVERFLOW } from './overflow.ts';
 import { syntheticGraph } from './syntheticGraph.ts';
 
 const OUT_DIR = fileURLToPath(new URL('../.screenshots/', import.meta.url));
@@ -76,12 +77,10 @@ async function waitForMap(page: Page, name: string): Promise<void> {
   }
 }
 
-async function assertNoHorizontalScroll(page: Page, label: string) {
-  const overflow = await page.evaluate(
-    () => document.documentElement.scrollWidth - window.innerWidth,
-  );
+async function assertNoHorizontalOverflow(page: Page, label: string) {
+  const overflow = await page.evaluate<number>(HORIZONTAL_OVERFLOW);
   if (overflow > 0) {
-    throw new Error(`${label}: page scrolls sideways by ${overflow} px`);
+    throw new Error(`${label}: content overflows sideways by ${overflow} px`);
   }
 }
 
@@ -101,7 +100,7 @@ async function captureName(
     await page.goto(pageUrl(name));
     await waitForMap(page, name);
     const label = `${name} at ${viewport.width} px`;
-    if (viewport.mobile) await assertNoHorizontalScroll(page, label);
+    if (viewport.mobile) await assertNoHorizontalOverflow(page, label);
     const shots = [await shoot(page, `${name}-${viewport.width}.png`)];
 
     if (name === PANEL_NAME) {
@@ -112,7 +111,7 @@ async function captureName(
         canvas.y + canvas.height / 2,
       );
       await page.waitForSelector(PANEL, { timeout: 5_000 });
-      if (viewport.mobile) await assertNoHorizontalScroll(page, label);
+      if (viewport.mobile) await assertNoHorizontalOverflow(page, label);
       shots.push(await shoot(page, `${name}-${viewport.width}-panel.png`));
     }
     return shots;

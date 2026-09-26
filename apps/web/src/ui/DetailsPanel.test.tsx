@@ -216,23 +216,26 @@ describe('DetailsPanel', () => {
   });
 
   it('copies the address and reads Copied for 1.5 s', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const user = userEvent.setup({
-      advanceTimers: (ms) => vi.advanceTimersByTime(ms),
-    });
+    // Installs the clipboard stub, while clicks go through fireEvent instead
+    userEvent.setup();
+    // A clock that never moves on its own, so load cannot shift the 1.5 s edge
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     const writeText = vi
       .spyOn(navigator.clipboard, 'writeText')
       .mockResolvedValue(undefined);
     renderPanel(AGENT);
-    // The async act flushes the effect that starts the 1.5 s timer before the
-    // clock is advanced; without it that effect can run too late under load.
     await act(async () => {
-      await user.click(screen.getByRole('button', { name: 'Copy' }));
+      fireEvent.click(screen.getByRole('button', { name: 'Copy' }));
+      await Promise.resolve();
     });
     expect(writeText).toHaveBeenCalledExactlyOnceWith(WALLET);
     expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy();
     act(() => {
-      vi.advanceTimersByTime(1500);
+      vi.advanceTimersByTime(1499);
+    });
+    expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy();
+    act(() => {
+      vi.advanceTimersByTime(1);
     });
     expect(screen.getByRole('button', { name: 'Copy' })).toBeTruthy();
   });
