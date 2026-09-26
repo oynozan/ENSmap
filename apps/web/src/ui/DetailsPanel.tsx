@@ -63,9 +63,12 @@ export function DetailsPanel(props: {
     };
   }, []);
 
-  // Refocus on each name, since a pressed Same wallet button leaves with the old one
+  // Focus follows a list or panel control to each name, a map click leaves it on the page
   useLayoutEffect(() => {
-    headingRef.current?.focus({ preventScroll: true });
+    const active = document.activeElement;
+    if (active !== null && active !== document.body) {
+      headingRef.current?.focus({ preventScroll: true });
+    }
   }, [node.id]);
 
   useEffect(() => {
@@ -166,6 +169,8 @@ export function DetailsPanel(props: {
                     className="details-link"
                     type="button"
                     onClick={() => {
+                      // This button unmounts with the name it is listed under
+                      headingRef.current?.focus({ preventScroll: true });
                       onSelect(id);
                     }}
                   >

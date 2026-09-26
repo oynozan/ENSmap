@@ -147,34 +147,50 @@ describe('DetailsPanel', () => {
     expect(onSelect).toHaveBeenCalledExactlyOnceWith('home');
   });
 
-  it('focuses its heading on open and keeps focus there across Same wallet', async () => {
-    function Harness() {
-      const [id, setId] = useState('agent');
-      return (
-        <DetailsPanel
-          node={BY_ID.get(id) ?? AGENT}
-          nodesById={BY_ID}
-          onSelect={setId}
-          onClose={vi.fn()}
-        />
-      );
-    }
+  function Harness() {
+    const [id, setId] = useState('agent');
+    return (
+      <DetailsPanel
+        node={BY_ID.get(id) ?? AGENT}
+        nodesById={BY_ID}
+        onSelect={setId}
+        onClose={vi.fn()}
+      />
+    );
+  }
+
+  it('takes focus from a focused opener and keeps it across Same wallet', async () => {
+    const opener = document.createElement('button');
+    document.body.append(opener);
+    opener.focus();
     const user = userEvent.setup();
+    try {
+      render(<Harness />);
+      expect(document.activeElement).toBe(
+        screen.getByRole('heading', {
+          level: 2,
+          name: 'agent-1.seller-a.eth',
+        }),
+      );
+
+      act(() => {
+        within(rowValue('Same wallet'))
+          .getByRole('button', { name: 'obs.seller-a.eth' })
+          .focus();
+      });
+      await user.keyboard('{Enter}');
+
+      expect(document.activeElement).toBe(
+        screen.getByRole('heading', { level: 2, name: 'obs.seller-a.eth' }),
+      );
+    } finally {
+      opener.remove();
+    }
+  });
+
+  it('leaves focus alone when opened with nothing focused, as from the map', () => {
     render(<Harness />);
-    expect(document.activeElement).toBe(
-      screen.getByRole('heading', { level: 2, name: 'agent-1.seller-a.eth' }),
-    );
-
-    act(() => {
-      within(rowValue('Same wallet'))
-        .getByRole('button', { name: 'obs.seller-a.eth' })
-        .focus();
-    });
-    await user.keyboard('{Enter}');
-
-    expect(document.activeElement).toBe(
-      screen.getByRole('heading', { level: 2, name: 'obs.seller-a.eth' }),
-    );
+    expect(document.activeElement).toBe(document.body);
   });
 
   it('closes on Escape and on the close button', async () => {
