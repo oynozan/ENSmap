@@ -7,6 +7,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -354,5 +355,49 @@ describe('App', () => {
     } finally {
       timeout.mockRestore();
     }
+  });
+
+  it('moves focus into the panel from the node list and back on close', async () => {
+    const user = userEvent.setup();
+    history.replaceState(null, '', '/?name=gloomy.eth');
+    render(<App />);
+    await screen.findByTestId('map');
+    const list = screen.getByRole('navigation', { name: 'Names on the map' });
+    const button = within(list).getByRole('button', { name: 'c1.gloomy.eth' });
+
+    act(() => {
+      button.focus();
+    });
+    await user.keyboard('{Enter}');
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { level: 2, name: 'c1.gloomy.eth' }),
+    );
+
+    await user.keyboard('{Escape}');
+    expect(
+      screen.queryByRole('complementary', { name: 'Name details' }),
+    ).toBeNull();
+    expect(document.activeElement).toBe(button);
+
+    await user.keyboard('{Enter}');
+    await user.click(screen.getByRole('button', { name: 'Close details' }));
+    expect(document.activeElement).toBe(button);
+  });
+
+  it('marks the map area while the panel is open', async () => {
+    history.replaceState(null, '', '/?name=gloomy.eth');
+    render(<App />);
+    await screen.findByTestId('map');
+    const main = screen.getByRole('main');
+    expect(main.classList.contains('app-main-details')).toBe(false);
+
+    const list = screen.getByRole('navigation', { name: 'Names on the map' });
+    fireEvent.click(
+      within(list).getByRole('button', { name: 'c1.gloomy.eth' }),
+    );
+    expect(main.classList.contains('app-main-details')).toBe(true);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(main.classList.contains('app-main-details')).toBe(false);
   });
 });

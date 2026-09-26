@@ -45,4 +45,9 @@
   .app-empty {
     font-size: 17px;
   }
+
+  /* The bottom sheet covers the status line, and hidden also takes it out of the tab order */
+  .app-main-details .status-line {
+    visibility: hidden;
+  }
 }

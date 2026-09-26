@@ -9,6 +9,7 @@ import {
   within,
 } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DetailsPanel } from './DetailsPanel.tsx';
@@ -144,6 +145,36 @@ describe('DetailsPanel', () => {
       }),
     );
     expect(onSelect).toHaveBeenCalledExactlyOnceWith('home');
+  });
+
+  it('focuses its heading on open and keeps focus there across Same wallet', async () => {
+    function Harness() {
+      const [id, setId] = useState('agent');
+      return (
+        <DetailsPanel
+          node={BY_ID.get(id) ?? AGENT}
+          nodesById={BY_ID}
+          onSelect={setId}
+          onClose={vi.fn()}
+        />
+      );
+    }
+    const user = userEvent.setup();
+    render(<Harness />);
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { level: 2, name: 'agent-1.seller-a.eth' }),
+    );
+
+    act(() => {
+      within(rowValue('Same wallet'))
+        .getByRole('button', { name: 'obs.seller-a.eth' })
+        .focus();
+    });
+    await user.keyboard('{Enter}');
+
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { level: 2, name: 'obs.seller-a.eth' }),
+    );
   });
 
   it('closes on Escape and on the close button', async () => {

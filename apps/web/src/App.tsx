@@ -123,7 +123,11 @@ export function App() {
           error={error}
         />
       </header>
-      <main className="app-main">
+      <main
+        className={
+          selected === undefined ? 'app-main' : 'app-main app-main-details'
+        }
+      >
         {graph === null ? (
           !busy && (
             <p className="app-empty">Search a name on the Sepolia ENSv2 Beta</p>

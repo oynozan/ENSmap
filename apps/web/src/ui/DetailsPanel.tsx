@@ -1,7 +1,14 @@
 import './DetailsPanel.css';
 
 import type { GraphNode } from '@ensmap/core/schema';
-import { useEffect, useState, type ReactNode, type Ref } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type Ref,
+} from 'react';
 
 const COPIED_MS = 1500;
 
@@ -36,6 +43,30 @@ export function DetailsPanel(props: {
 }) {
   const { node, nodesById, onSelect, onClose } = props;
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+
+  // Hands focus back to the opener, a layout cleanup still sees focus inside the panel
+  useLayoutEffect(() => {
+    const opener = document.activeElement;
+    const heading = headingRef.current;
+    return () => {
+      const inside = heading
+        ?.closest('aside')
+        ?.contains(document.activeElement);
+      if (
+        inside === true &&
+        opener instanceof HTMLElement &&
+        opener.isConnected
+      ) {
+        opener.focus({ preventScroll: true });
+      }
+    };
+  }, []);
+
+  // Refocus on each name, since a pressed Same wallet button leaves with the old one
+  useLayoutEffect(() => {
+    headingRef.current?.focus({ preventScroll: true });
+  }, [node.id]);
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -77,7 +108,9 @@ export function DetailsPanel(props: {
   return (
     <aside ref={props.ref} className="details" aria-label="Name details">
       <header className="details-head">
-        <h2 className="details-title">{node.label}</h2>
+        <h2 ref={headingRef} className="details-title" tabIndex={-1}>
+          {node.label}
+        </h2>
         <button
           className="details-close"
           type="button"
