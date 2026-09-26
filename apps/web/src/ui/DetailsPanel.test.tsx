@@ -193,7 +193,11 @@ describe('DetailsPanel', () => {
       .spyOn(navigator.clipboard, 'writeText')
       .mockResolvedValue(undefined);
     renderPanel(AGENT);
-    await user.click(screen.getByRole('button', { name: 'Copy' }));
+    // The async act flushes the effect that starts the 1.5 s timer before the
+    // clock is advanced; without it that effect can run too late under load.
+    await act(async () => {
+      await user.click(screen.getByRole('button', { name: 'Copy' }));
+    });
     expect(writeText).toHaveBeenCalledExactlyOnceWith(WALLET);
     expect(screen.getByRole('button', { name: 'Copied' })).toBeTruthy();
     act(() => {
