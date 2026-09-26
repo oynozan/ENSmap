@@ -453,6 +453,28 @@ describe('walkTree', () => {
         /elsewhere/,
       );
     });
+
+    it('rejects a source that answers a cursor with the same cursor', async () => {
+      const fake = createFakeNameSource({
+        domains: [{ id: 'r', label: 'r', canonicalName: 'r' }],
+      });
+      let calls = 0;
+      const source: NameSource = {
+        ...fake,
+        listChildren: () => {
+          calls += 1;
+          // Without a guard the walk would page forever
+          return calls > 5
+            ? Promise.reject(new Error('still paging'))
+            : Promise.resolve({ items: [], next: 'c1' });
+        },
+      };
+
+      await expect(walkTree(source, name('r'), OPTS)).rejects.toThrow(
+        'fake listChildren answered cursor "c1" with the same cursor',
+      );
+      expect(calls).toBe(2);
+    });
   });
 
   describe('root', () => {

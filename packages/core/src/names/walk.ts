@@ -173,6 +173,11 @@ async function listPendingKeys(
     let cursor: string | null = null;
     do {
       const page = await source.listChildren(batch, cursor);
+      if (page.next !== null && page.next === cursor) {
+        throw new Error(
+          `${source.id} listChildren answered cursor ${JSON.stringify(cursor)} with the same cursor, so paging would never end`,
+        );
+      }
       for (const { parentId, record } of page.items) {
         const listing = listingFor(parentId);
         if (fetchedIds.has(record.id)) {
