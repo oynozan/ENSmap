@@ -1,5 +1,5 @@
 import type { ApiError, Graph } from '@ensmap/core/schema';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { fetchGraph } from './api.ts';
 
@@ -172,6 +172,32 @@ describe('fetchGraph', () => {
     });
   });
 
+  it('times out while the caller signal is still live', async () => {
+    const controller = new AbortController();
+    const result = await fetchGraph('gloomy.eth', {
+      fetch: hangingFetch,
+      signal: controller.signal,
+      timeoutMs: 20,
+    });
+    controller.abort();
+    expect(result).toEqual({
+      ok: false,
+      message: 'The lookup took too long. Try again.',
+    });
+  });
+
+  it.each(['.', '..'])(
+    'rejects %s as an empty label without a request',
+    async (name) => {
+      const fetchImpl = jsonFetch(200, GRAPH);
+      await expect(fetchGraph(name, { fetch: fetchImpl })).resolves.toEqual({
+        ok: false,
+        message: 'Invalid name: empty label (label "")',
+      });
+      expect(fetchImpl).not.toHaveBeenCalled();
+    },
+  );
+
   it('rethrows an abort from the caller', async () => {
     const controller = new AbortController();
     const pending = fetchGraph('gloomy.eth', {
@@ -208,6 +234,46 @@ describe('fetchGraph', () => {
       signal: controller.signal,
     });
     await new Promise((resolve) => setTimeout(resolve, 5));
+    controller.abort();
+    await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
+  });
+});
+
+describe('fetchGraph without AbortSignal.any', () => {
+  const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any');
+
+  afterEach(() => {
+    if (any !== undefined) Object.defineProperty(AbortSignal, 'any', any);
+  });
+
+  function removeAny() {
+    Object.defineProperty(AbortSignal, 'any', {
+      value: undefined,
+      configurable: true,
+    });
+  }
+
+  it('still times out with a caller signal', async () => {
+    removeAny();
+    await expect(
+      fetchGraph('gloomy.eth', {
+        fetch: hangingFetch,
+        signal: new AbortController().signal,
+        timeoutMs: 20,
+      }),
+    ).resolves.toEqual({
+      ok: false,
+      message: 'The lookup took too long. Try again.',
+    });
+  });
+
+  it('still rethrows an abort from the caller', async () => {
+    removeAny();
+    const controller = new AbortController();
+    const pending = fetchGraph('gloomy.eth', {
+      fetch: hangingFetch,
+      signal: controller.signal,
+    });
     controller.abort();
     await expect(pending).rejects.toMatchObject({ name: 'AbortError' });
   });

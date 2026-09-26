@@ -3,7 +3,7 @@ import './App.css';
 import type { Graph, GraphNode } from '@ensmap/core/schema';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { fetchGraph } from './api.ts';
+import { fetchGraph, MESSAGES } from './api.ts';
 import { MapView } from './map/MapView.tsx';
 import { DetailsPanel } from './ui/DetailsPanel.tsx';
 import { NodeList } from './ui/NodeList.tsx';
@@ -50,7 +50,10 @@ export function App() {
           setError(result.message);
         }
       } catch {
-        // Only this search's own abort rejects, and it is always superseded
+        // An abort means a newer search or a Back replaced this one
+        if (controller.signal.aborted) return;
+        showGraph(null);
+        setError(MESSAGES.generic);
       } finally {
         if (searchRef.current === controller) {
           searchRef.current = null;
@@ -121,7 +124,9 @@ export function App() {
       </header>
       <main className="app-main">
         {graph === null ? (
-          <p className="app-empty">Search a name on the Sepolia ENSv2 Beta</p>
+          !busy && (
+            <p className="app-empty">Search a name on the Sepolia ENSv2 Beta</p>
+          )
         ) : (
           <>
             <MapView

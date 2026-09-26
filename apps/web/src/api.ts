@@ -4,8 +4,10 @@ export type FetchGraphResult =
   { ok: true; graph: Graph } | { ok: false; message: string };
 
 const LOOKUP_TIMEOUT_MS = 90_000;
+// URL parsing drops "." and ".." as path segments, so they never reach the name route
+const DOT_SEGMENT = /^\.{1,2}$/;
 
-const MESSAGES = {
+export const MESSAGES = {
   notFound: 'Name not found on the Sepolia ENSv2 Beta',
   providerError: 'A data source is unavailable. Try again shortly.',
   timeout: 'The lookup took too long. Try again.',
@@ -20,6 +22,31 @@ function graphUrl(name: string): string {
 
 function failure(message: string): FetchGraphResult {
   return { ok: false, message };
+}
+
+function invalidName(label: { label: string; reason: string }): string {
+  return `Invalid name: ${label.reason} (label "${label.label}")`;
+}
+
+// AbortSignal.any arrived in Safari 17.4, after the build target
+function anySignal(signals: AbortSignal[]): AbortSignal {
+  const native = (AbortSignal as { any?: typeof AbortSignal.any }).any;
+  if (native !== undefined) return native.call(AbortSignal, signals);
+  const controller = new AbortController();
+  for (const signal of signals) {
+    if (signal.aborted) {
+      controller.abort(signal.reason);
+      break;
+    }
+    signal.addEventListener(
+      'abort',
+      () => {
+        controller.abort(signal.reason);
+      },
+      { once: true, signal: controller.signal },
+    );
+  }
+  return controller.signal;
 }
 
 // Read errors, aborts included, propagate while a non-JSON body becomes undefined
@@ -40,7 +67,7 @@ function errorMessage(status: number, body: unknown): string {
   }
   const label = error?.code === 'invalid-name' ? error.labels?.[0] : undefined;
   if (status === 400 && label !== undefined) {
-    return `Invalid name: ${label.reason} (label "${label.label}")`;
+    return invalidName(label);
   }
   if (status === 502) {
     // A 502 without an API error body comes from a proxy whose API is down
@@ -53,12 +80,13 @@ export async function fetchGraph(
   name: string,
   opts: { signal?: AbortSignal; fetch?: typeof fetch; timeoutMs?: number } = {},
 ): Promise<FetchGraphResult> {
+  if (DOT_SEGMENT.test(name)) {
+    return failure(invalidName({ label: '', reason: 'empty label' }));
+  }
   const fetchImpl = opts.fetch ?? fetch;
   const timeout = AbortSignal.timeout(opts.timeoutMs ?? LOOKUP_TIMEOUT_MS);
   const signal =
-    opts.signal === undefined
-      ? timeout
-      : AbortSignal.any([opts.signal, timeout]);
+    opts.signal === undefined ? timeout : anySignal([opts.signal, timeout]);
 
   try {
     const response = await fetchImpl(graphUrl(name), { signal });

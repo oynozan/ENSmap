@@ -101,6 +101,30 @@ function requestedNames(fetchMock: ReturnType<typeof vi.fn<typeof fetch>>) {
   return fetchMock.mock.calls.map(([input]) => requestedName(input));
 }
 
+// Answers each request only when the test calls respond(name, response)
+function deferredFetch() {
+  const pending = new Map<string, (response: Response) => void>();
+  const fetchMock = vi.fn<typeof fetch>(
+    (input) =>
+      new Promise((resolve) => {
+        pending.set(requestedName(input), resolve);
+      }),
+  );
+  async function respond(name: string, response: Response) {
+    await act(async () => {
+      pending.get(name)?.(response);
+      await Promise.resolve();
+    });
+  }
+  return { fetchMock, respond };
+}
+
+function searchButton(): HTMLButtonElement {
+  return screen.getByRole<HTMLButtonElement>('button', { name: 'Search' });
+}
+
+const EMPTY_HINT = 'Search a name on the Sepolia ENSv2 Beta';
+
 async function search(name: string) {
   const user = userEvent.setup();
   const input = screen.getByLabelText<HTMLInputElement>('ENS name');
@@ -260,5 +284,75 @@ describe('App', () => {
     expect(
       screen.queryByRole('complementary', { name: 'Name details' }),
     ).toBeNull();
+  });
+
+  it('stays busy during a lookup and hides the empty hint meanwhile', async () => {
+    const { fetchMock, respond } = deferredFetch();
+    vi.stubGlobal('fetch', fetchMock);
+    history.replaceState(null, '', '/?name=a.eth');
+    render(<App />);
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledOnce();
+    });
+    expect(searchButton().getAttribute('aria-busy')).toBe('true');
+    expect(searchButton().disabled).toBe(true);
+    expect(screen.queryByText(EMPTY_HINT)).toBeNull();
+
+    await respond('a.eth', json(GRAPHS['a.eth']));
+    await screen.findByTestId('map');
+    expect(searchButton().getAttribute('aria-busy')).toBe('false');
+    expect(searchButton().disabled).toBe(false);
+  });
+
+  it('stops being busy and shows the error when a lookup fails', async () => {
+    const { fetchMock, respond } = deferredFetch();
+    vi.stubGlobal('fetch', fetchMock);
+    render(<App />);
+
+    await search('a.eth');
+    expect(searchButton().getAttribute('aria-busy')).toBe('true');
+
+    await respond(
+      'a.eth',
+      json({ error: { code: 'provider-error', message: 'x' } }, 502),
+    );
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'A data source is unavailable. Try again shortly.',
+    );
+    expect(searchButton().getAttribute('aria-busy')).toBe('false');
+    expect(screen.getByText(EMPTY_HINT)).toBeTruthy();
+  });
+
+  it('searches where AbortSignal.any is missing', async () => {
+    const any = Object.getOwnPropertyDescriptor(AbortSignal, 'any');
+    Object.defineProperty(AbortSignal, 'any', {
+      value: undefined,
+      configurable: true,
+    });
+    try {
+      render(<App />);
+      await search('a.eth');
+      expect((await screen.findByTestId('map')).textContent).toBe('2');
+    } finally {
+      if (any !== undefined) Object.defineProperty(AbortSignal, 'any', any);
+    }
+  });
+
+  it('shows an error when the lookup throws unexpectedly', async () => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout').mockImplementation(() => {
+      throw new TypeError('AbortSignal.timeout is not a function');
+    });
+    try {
+      render(<App />);
+      await search('a.eth');
+      expect((await screen.findByRole('alert')).textContent).toBe(
+        'Something went wrong',
+      );
+      expect(searchButton().getAttribute('aria-busy')).toBe('false');
+      expect(screen.queryByTestId('map')).toBeNull();
+    } finally {
+      timeout.mockRestore();
+    }
   });
 });
