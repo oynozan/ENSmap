@@ -6,6 +6,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { parseArgs } from 'node:util';
 
+import { loadDotEnv, loadEnv } from '@ensmap/core/config';
 import { chromium, type Browser, type Page } from 'playwright-core';
 
 import { syntheticGraph } from './syntheticGraph.ts';
@@ -27,8 +28,14 @@ const P95_LIMIT_MS = 20;
 
 type Viewport = (typeof VIEWPORTS)[number];
 
+loadDotEnv();
 const { values } = parseArgs({
-  options: { base: { type: 'string', default: 'http://localhost:5173' } },
+  options: {
+    base: {
+      type: 'string',
+      default: `http://localhost:${loadEnv().ENSMAP_WEB_PORT}`,
+    },
+  },
 });
 const base = values.base;
 

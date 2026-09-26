@@ -83,10 +83,12 @@ API calls: ens-dev-graphql=5, rpc=12
 pnpm dev
 ```
 
-This starts the API on http://localhost:3000 and the web app on
-http://localhost:5173, which proxies `/api` to the API. Open
-http://localhost:5173 and search a name such as `seller-a.eth` or
-`gloomy.eth`, or link to one directly with `?name=gloomy.eth`.
+This starts the API on http://localhost:3100 and the web app on
+http://localhost:5180, which proxies `/api` to the API. Open
+http://localhost:5180 and search a name such as `seller-a.eth` or
+`gloomy.eth`, or link to one directly with `?name=gloomy.eth`. Both listen
+on localhost only; set `ENSMAP_API_PORT` and `ENSMAP_WEB_PORT` to use other
+ports.
 
 - The web covers the Sepolia ENSv2 Beta (`sepolia-v2`) only and has no
   network control. It reads `GET /map/name/<name>?namespace=sepolia-v2`,
@@ -107,8 +109,9 @@ the installed Chrome through `playwright-core`. It saves desktop (1440 px)
 and phone (390 px) screenshots of `seller-a.eth` and `gloomy.eth`, plus the
 details panel, to `apps/web/.screenshots/`. It then prints the 95th-percentile
 frame time while panning and zooming a synthetic 301-node map, and exits 1
-above 20 ms. `--base <url>` points it at another dev server. It calls the
-live API and is not part of `pnpm run ci`.
+above 20 ms. It targets the web app on `ENSMAP_WEB_PORT`, and
+`--base <url>` points it at another dev server. It calls the live API and
+is not part of `pnpm run ci`.
 
 ## Environment
 
@@ -123,6 +126,7 @@ loads it. Secret values are redacted from errors, logs and fixtures.
 | `ENS_SOURCE_KIND_MAINNET`, `ENS_SOURCE_KIND_SEPOLIA_V2` | `ens-subgraph` or `ens-dev-graphql`. Defaults: `ens-subgraph` on mainnet, `ens-dev-graphql` on sepolia-v2.            |
 | `ENS_SOURCE_URL_MAINNET`, `ENS_SOURCE_URL_SEPOLIA_V2`   | Name source URL override. The Graph key is only sent when the override host is `gateway.thegraph.com`.                |
 | `ENSMAP_FIXTURES`                                       | `record`, `replay` or `off`. Tests default to `replay`; the CLI defaults to `off`.                                    |
+| `ENSMAP_API_PORT`, `ENSMAP_WEB_PORT`                    | Dev server ports for `pnpm dev`. Defaults: `3100` for the API and `5180` for the web app.                             |
 | `DATABASE_URL`                                          | Postgres or PGlite, used from Phase 2.                                                                                |
 | `DUNE_API_KEY`, `BITQUERY_API_KEY`                      | Label sources, used from Phase 3.                                                                                     |
 | `ENSNODE_URL_MAINNET`, `ENSNODE_URL_SEPOLIA_V2`         | Reserved and unused.                                                                                                  |

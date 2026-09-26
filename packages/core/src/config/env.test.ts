@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
 import { loadEnv, requireEnv, workspaceRoot } from './env.ts';
 
 describe('loadEnv', () => {
-  it('returns every key undefined when the source is empty', () => {
+  it('leaves every key but the dev ports undefined when the source is empty', () => {
     const env = loadEnv({});
 
     expect(env).toEqual({
@@ -25,8 +25,26 @@ describe('loadEnv', () => {
       RPC_URL_1: undefined,
       RPC_URL_11155111: undefined,
       ENSMAP_FIXTURES: undefined,
+      ENSMAP_API_PORT: 3100,
+      ENSMAP_WEB_PORT: 5180,
     });
   });
+
+  it('reads the dev server ports as integers', () => {
+    const env = loadEnv({ ENSMAP_API_PORT: '4000', ENSMAP_WEB_PORT: '65535' });
+
+    expect(env.ENSMAP_API_PORT).toBe(4000);
+    expect(env.ENSMAP_WEB_PORT).toBe(65535);
+  });
+
+  it.each(['ENSMAP_API_PORT', 'ENSMAP_WEB_PORT'])(
+    'rejects a %s outside 1-65535 or not a plain integer',
+    (key) => {
+      for (const value of ['0', '65536', 'abc', '3.5', '0x10', '-1']) {
+        expect(() => loadEnv({ [key]: value }), value).toThrow(key);
+      }
+    },
+  );
 
   it('throws on an invalid URL without leaking the raw value', () => {
     expect(() => loadEnv({ RPC_URL_1: 'nope' })).toThrow(/RPC_URL_1/);

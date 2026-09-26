@@ -12,6 +12,16 @@ const endpointUrl = z.httpUrl().refine((value) => {
   return url !== null && url.username === '' && url.password === '';
 });
 
+export const DEFAULT_API_PORT = 3100;
+export const DEFAULT_WEB_PORT = 5180;
+
+// Digits only, so a value such as 0x10 or 1e3 is rejected rather than coerced
+const port = z
+  .string()
+  .regex(/^\d+$/)
+  .transform(Number)
+  .pipe(z.int().min(1).max(65535));
+
 export const EnvSchema = z.object({
   // Spec ground rules (section 1): secrets that never reach the browser.
   ALCHEMY_API_KEY: z.string().optional(),
@@ -33,6 +43,10 @@ export const EnvSchema = z.object({
   RPC_URL_11155111: endpointUrl.optional(),
 
   ENSMAP_FIXTURES: fixturesMode.optional(),
+
+  // Dev servers, read on the Node side only and never sent to the browser
+  ENSMAP_API_PORT: port.default(DEFAULT_API_PORT),
+  ENSMAP_WEB_PORT: port.default(DEFAULT_WEB_PORT),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
