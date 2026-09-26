@@ -25,7 +25,7 @@ describe('loadEnv', () => {
       RPC_URL_1: undefined,
       RPC_URL_11155111: undefined,
       ENSMAP_FIXTURES: undefined,
-      ENSMAP_API_PORT: 3100,
+      ENSMAP_API_PORT: 3002,
       ENSMAP_WEB_PORT: 5180,
     });
   });

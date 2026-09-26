@@ -12,7 +12,7 @@ const endpointUrl = z.httpUrl().refine((value) => {
   return url !== null && url.username === '' && url.password === '';
 });
 
-export const DEFAULT_API_PORT = 3100;
+export const DEFAULT_API_PORT = 3002;
 export const DEFAULT_WEB_PORT = 5180;
 
 // Digits only, so a value such as 0x10 or 1e3 is rejected rather than coerced

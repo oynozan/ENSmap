@@ -83,7 +83,7 @@ API calls: ens-dev-graphql=5, rpc=12
 pnpm dev
 ```
 
-This starts the API on http://localhost:3100 and the web app on
+This starts the API on http://localhost:3002 and the web app on
 http://localhost:5180, which proxies `/api` to the API. Open
 http://localhost:5180 and search a name such as `seller-a.eth` or
 `gloomy.eth`, or link to one directly with `?name=gloomy.eth`. Both listen
@@ -126,7 +126,7 @@ loads it. Secret values are redacted from errors, logs and fixtures.
 | `ENS_SOURCE_KIND_MAINNET`, `ENS_SOURCE_KIND_SEPOLIA_V2` | `ens-subgraph` or `ens-dev-graphql`. Defaults: `ens-subgraph` on mainnet, `ens-dev-graphql` on sepolia-v2.            |
 | `ENS_SOURCE_URL_MAINNET`, `ENS_SOURCE_URL_SEPOLIA_V2`   | Name source URL override. The Graph key is only sent when the override host is `gateway.thegraph.com`.                |
 | `ENSMAP_FIXTURES`                                       | `record`, `replay` or `off`. Tests default to `replay`; the CLI defaults to `off`.                                    |
-| `ENSMAP_API_PORT`, `ENSMAP_WEB_PORT`                    | Dev server ports for `pnpm dev`. Defaults: `3100` for the API and `5180` for the web app.                             |
+| `ENSMAP_API_PORT`, `ENSMAP_WEB_PORT`                    | Dev server ports for `pnpm dev`. Defaults: `3002` for the API and `5180` for the web app.                             |
 | `DATABASE_URL`                                          | Postgres or PGlite, used from Phase 2.                                                                                |
 | `DUNE_API_KEY`, `BITQUERY_API_KEY`                      | Label sources, used from Phase 3.                                                                                     |
 | `ENSNODE_URL_MAINNET`, `ENSNODE_URL_SEPOLIA_V2`         | Reserved and unused.                                                                                                  |

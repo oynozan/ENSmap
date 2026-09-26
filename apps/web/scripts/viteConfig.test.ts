@@ -23,13 +23,13 @@ afterEach(() => {
 });
 
 describe('vite dev server config', () => {
-  it('defaults to port 5180 and proxies /api to port 3100', async () => {
+  it('defaults to port 5180 and proxies /api to port 3002', async () => {
     vi.stubEnv('ENSMAP_WEB_PORT', '');
     vi.stubEnv('ENSMAP_API_PORT', '');
     expect(await devServer()).toEqual({
       port: 5180,
       strictPort: true,
-      target: 'http://localhost:3100',
+      target: 'http://localhost:3002',
     });
   });
 
