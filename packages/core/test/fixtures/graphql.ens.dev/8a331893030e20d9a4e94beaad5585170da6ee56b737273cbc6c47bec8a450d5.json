@@ -1,0 +1,69 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query RegistryChildren($registry: String!, $after: String) {\n  domainConnection(first: 1000, after: $after, where: { registry: $registry }) {\n    totalCount\n    pageInfo { hasNextPage endCursor }\n    edges {\n      node {\n        id name labelName labelhash canonicalId protocol\n    owner { id } resolver { address } resolvedAddress { id }\n    subregistry { address } parent { id subregistry { address } }\n    registrationDate createdAt expiryDate\n      }\n    }\n  }\n}",
+      "variables": {
+        "registry": "0x74dc5f00b1fb2c11b77e00cfe62539c886175476",
+        "after": null
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "domainConnection": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "hasPreviousPage": false,
+            "startCursor": "a2YKYwpmYTdiNmVjNmMzOWI0MzEwCjEKMHhhZjczNjZjNWFmY2EyNTkxMDE1MzcwMWNlM2Y5NGY5ZWU0YWZhOGM4MDBlNjgyOTg0MWMyYzIzYWY3NjA2MTkxCjE3ODk2NDE2ODQ=",
+            "endCursor": "a2YKYwpmYTdiNmVjNmMzOWI0MzEwCjEKMHhhZjczNjZjNWFmY2EyNTkxMDE1MzcwMWNlM2Y5NGY5ZWU0YWZhOGM4MDBlNjgyOTg0MWMyYzIzYWY3NjA2MTkxCjE3ODk2NDE2ODQ="
+          },
+          "edges": [
+            {
+              "cursor": "a2YKYwpmYTdiNmVjNmMzOWI0MzEwCjEKMHhhZjczNjZjNWFmY2EyNTkxMDE1MzcwMWNlM2Y5NGY5ZWU0YWZhOGM4MDBlNjgyOTg0MWMyYzIzYWY3NjA2MTkxCjE3ODk2NDE2ODQ=",
+              "node": {
+                "id": "0xaf7366c5afca25910153701ce3f94f9ee4afa8c800e6829841c2c23af7606191",
+                "name": "tiny.test.gloomy.eth",
+                "labelName": "tiny",
+                "labelhash": "0xde0d57187dea0d160978c1e7a2d2c7bb848a3ca894850f745da0e5042416f4c0",
+                "canonicalId": "0xde0d57187dea0d160978c1e7a2d2c7bb848a3ca894850f745da0e50400000000",
+                "protocol": "v2",
+                "owner": {
+                  "id": "0x34045271c07cf636e4cb98ab7747ccb139f46ed6"
+                },
+                "resolver": {
+                  "address": "0x6abdb69f50877061d417ca4c80d2b4d571c64115"
+                },
+                "resolvedAddress": null,
+                "subregistry": {
+                  "address": "0x74dc5f00b1fb2c11b77e00cfe62539c886175476"
+                },
+                "parent": {
+                  "id": "0xb467873ca0c1ac1059dfa0753d192f7a603f4d114b4f864625955b8970f4a4ce",
+                  "subregistry": {
+                    "address": "0x74dc5f00b1fb2c11b77e00cfe62539c886175476"
+                  }
+                },
+                "registrationDate": 1789641684,
+                "createdAt": 1789641684,
+                "expiryDate": 1821177665
+              }
+            }
+          ],
+          "totalCount": 1
+        }
+      }
+    }
+  }
+}

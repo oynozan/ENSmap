@@ -1,0 +1,100 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query NodeHistory($nodes: [EventFilter!]!) {\n  events(\n    first: 1000\n    where: { type_in: [\"Linked\", \"ResolverUpdated\"], or: $nodes }\n  ) {\n    id blockNumber timestamp type data namehash\n  }\n}",
+      "variables": {
+        "nodes": [
+          {
+            "namehash": "0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91"
+          },
+          {
+            "namehash": "0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "events": [
+          {
+            "id": "0xd0340466b8567eda919e217c5bb3de6f1ec1e4914c9ebce937d7e8c40d9fd0ce-5",
+            "blockNumber": 11779754,
+            "timestamp": 1790345748,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"1\",\"node\":\"0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883\",\"name\":\"ensv2subgraph416bb.eth\"}",
+            "namehash": "0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883"
+          },
+          {
+            "id": "0x8457f24de5c9f18f59d9b3c783c2b338a26162b60d554e736b5a9796b8dbf255-27",
+            "blockNumber": 11779674,
+            "timestamp": 1790344788,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"0\",\"node\":\"0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883\",\"name\":\"ensv2subgraph416bb.eth\"}",
+            "namehash": "0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883"
+          },
+          {
+            "id": "0x2f75a4c85e0816e88c3913a35254d2af8fc9caf104dd9d575efad8ce3d76a630-45",
+            "blockNumber": 11779611,
+            "timestamp": 1790344032,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"1\",\"node\":\"0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883\",\"name\":\"ensv2subgraph416bb.eth\"}",
+            "namehash": "0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883"
+          },
+          {
+            "id": "0x3206b13ae77a5c087c3c12b9b05176762a83c59377e201b9f21b90f254942683-248",
+            "blockNumber": 11779399,
+            "timestamp": 1790341464,
+            "type": "ResolverUpdated",
+            "data": "{\"tokenId\":7857707296942895563816093989158587260326720943060240158505058742226183520256,\"resolver\":\"0xc54403186db35b9d92cc393ae665d3960117ac14\",\"sender\":\"0xc0f58df8753a4c53fd98c17e46e9f4ce6b8e9fa6\"}",
+            "namehash": "0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91"
+          },
+          {
+            "id": "0x360b102694768184664efcbde9832a333776dbf179c1e9e5984c64c0568e1436-386",
+            "blockNumber": 11779398,
+            "timestamp": 1790341452,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0xc54403186db35b9d92cc393ae665d3960117ac14\",\"recordId\":\"1\",\"node\":\"0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91\",\"name\":\"seller-a.eth\"}",
+            "namehash": "0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91"
+          },
+          {
+            "id": "0x923e95a64241a067889ce60d80907a5316f93d9ade79f7fa86a06b8336c7e292-6",
+            "blockNumber": 11778824,
+            "timestamp": 1790334552,
+            "type": "ResolverUpdated",
+            "data": "{\"tokenId\":84842039931677367428916121122228798945845215679880389732902543784532653375488,\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"sender\":\"0xabe76f6c8dfced81aa5a2bb8034202a7136b94ca\"}",
+            "namehash": "0xf43aa67791a5fe5e12c9e52e673f1d3787e1de056592ca4abb673644b2ad9883"
+          },
+          {
+            "id": "0xca6c2f28266dbf563ddd5ff6d32d72ba4af8d93162753db211d6bd35b2497f81-292",
+            "blockNumber": 11721545,
+            "timestamp": 1789621128,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0x49f5022dde516b92ac1609158bc6adc772088055\",\"recordId\":\"1\",\"node\":\"0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91\",\"name\":\"seller-a.eth\"}",
+            "namehash": "0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91"
+          },
+          {
+            "id": "0xca6c2f28266dbf563ddd5ff6d32d72ba4af8d93162753db211d6bd35b2497f81-290",
+            "blockNumber": 11721545,
+            "timestamp": 1789621128,
+            "type": "ResolverUpdated",
+            "data": "{\"tokenId\":7857707296942895563816093989158587260326720943060240158505058742226183520256,\"resolver\":\"0x49f5022dde516b92ac1609158bc6adc772088055\",\"sender\":\"0xabe76f6c8dfced81aa5a2bb8034202a7136b94ca\"}",
+            "namehash": "0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91"
+          }
+        ]
+      }
+    }
+  }
+}

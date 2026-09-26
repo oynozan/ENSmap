@@ -1,0 +1,101 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query RegistryChildren($registry: String!, $after: String) {\n  domainConnection(first: 1000, after: $after, where: { registry: $registry }) {\n    totalCount\n    pageInfo { hasNextPage endCursor }\n    edges {\n      node {\n        id name labelName labelhash canonicalId protocol\n    owner { id } resolver { address } resolvedAddress { id }\n    subregistry { address } parent { id subregistry { address } }\n    registrationDate createdAt expiryDate\n      }\n    }\n  }\n}",
+      "variables": {
+        "registry": "0x1b8eb08af15ffd4d854a9ff4ac8b386056e377db",
+        "after": null
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "domainConnection": {
+          "pageInfo": {
+            "hasNextPage": false,
+            "hasPreviousPage": false,
+            "startCursor": "a2YKYwphMTliNGIxMjI4MDI1ZGU0CjIKMHhiNDY3ODczY2EwYzFhYzEwNTlkZmEwNzUzZDE5MmY3YTYwM2Y0ZDExNGI0Zjg2NDYyNTk1NWI4OTcwZjRhNGNlCjE3ODk2NDE2MDA=",
+            "endCursor": "a2YKYwphMTliNGIxMjI4MDI1ZGU0CjIKMHg0MTg4ZmZlNjgwMjkxMmQxNzEyOWVhMTI4NmNhNjcyYjBlYmY3M2Q5MzYzNzM5OWIzNjhlZWMwMjNhZGUzYzVkCjE3ODk2NDE0NDQ="
+          },
+          "edges": [
+            {
+              "cursor": "a2YKYwphMTliNGIxMjI4MDI1ZGU0CjIKMHhiNDY3ODczY2EwYzFhYzEwNTlkZmEwNzUzZDE5MmY3YTYwM2Y0ZDExNGI0Zjg2NDYyNTk1NWI4OTcwZjRhNGNlCjE3ODk2NDE2MDA=",
+              "node": {
+                "id": "0xb467873ca0c1ac1059dfa0753d192f7a603f4d114b4f864625955b8970f4a4ce",
+                "name": "test.gloomy.eth",
+                "labelName": "test",
+                "labelhash": "0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb9a3cb658",
+                "canonicalId": "0x9c22ff5f21f0b81b113e63f7db6da94fedef11b2119b4088b89664fb00000000",
+                "protocol": "v2",
+                "owner": {
+                  "id": "0x34045271c07cf636e4cb98ab7747ccb139f46ed6"
+                },
+                "resolver": {
+                  "address": "0x6abdb69f50877061d417ca4c80d2b4d571c64115"
+                },
+                "resolvedAddress": {
+                  "id": "0x34045271c07cf636e4cb98ab7747ccb139f46ed6"
+                },
+                "subregistry": {
+                  "address": "0x74dc5f00b1fb2c11b77e00cfe62539c886175476"
+                },
+                "parent": {
+                  "id": "0xa8767d64c5f05e0f59414a9f9eba5cdad851b4e901ccaf3f364174d27e7ea175",
+                  "subregistry": {
+                    "address": "0x1b8eb08af15ffd4d854a9ff4ac8b386056e377db"
+                  }
+                },
+                "registrationDate": 1789641600,
+                "createdAt": 1789641600,
+                "expiryDate": 1821177584
+              }
+            },
+            {
+              "cursor": "a2YKYwphMTliNGIxMjI4MDI1ZGU0CjIKMHg0MTg4ZmZlNjgwMjkxMmQxNzEyOWVhMTI4NmNhNjcyYjBlYmY3M2Q5MzYzNzM5OWIzNjhlZWMwMjNhZGUzYzVkCjE3ODk2NDE0NDQ=",
+              "node": {
+                "id": "0x4188ffe6802912d17129ea1286ca672b0ebf73d93637399b368eec023ade3c5d",
+                "name": "tiny.gloomy.eth",
+                "labelName": "tiny",
+                "labelhash": "0xde0d57187dea0d160978c1e7a2d2c7bb848a3ca894850f745da0e5042416f4c0",
+                "canonicalId": "0xde0d57187dea0d160978c1e7a2d2c7bb848a3ca894850f745da0e50400000000",
+                "protocol": "v2",
+                "owner": {
+                  "id": "0x34045271c07cf636e4cb98ab7747ccb139f46ed6"
+                },
+                "resolver": {
+                  "address": "0x6abdb69f50877061d417ca4c80d2b4d571c64115"
+                },
+                "resolvedAddress": null,
+                "subregistry": {
+                  "address": "0x57b705fa73de441d84bc5eb051da825e7f58b6b4"
+                },
+                "parent": {
+                  "id": "0xa8767d64c5f05e0f59414a9f9eba5cdad851b4e901ccaf3f364174d27e7ea175",
+                  "subregistry": {
+                    "address": "0x1b8eb08af15ffd4d854a9ff4ac8b386056e377db"
+                  }
+                },
+                "registrationDate": 1789641444,
+                "createdAt": 1789641444,
+                "expiryDate": 1821177441
+              }
+            }
+          ],
+          "totalCount": 2
+        }
+      }
+    }
+  }
+}

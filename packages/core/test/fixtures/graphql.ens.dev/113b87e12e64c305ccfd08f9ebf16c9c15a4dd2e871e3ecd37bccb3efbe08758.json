@@ -1,0 +1,104 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query ResolverHistory($resolvers: [EventFilter!]!) {\n  addressUpdates: events(\n    first: 1000\n    where: { type: \"AddressUpdated\", or: $resolvers }\n  ) {\n    id blockNumber timestamp type data\n  }\n  defaultLinks: events(\n    first: 1000\n    where: { type: \"Linked\", namehash: \"0x0000000000000000000000000000000000000000000000000000000000000000\", or: $resolvers }\n  ) {\n    id blockNumber timestamp type data\n  }\n}",
+      "variables": {
+        "resolvers": [
+          {
+            "contractAddress": "0xc54403186db35b9d92cc393ae665d3960117ac14"
+          },
+          {
+            "contractAddress": "0x49f5022dde516b92ac1609158bc6adc772088055"
+          },
+          {
+            "contractAddress": "0x7aaee2e6a4f493fc7840436d9e5bed788c714732"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "addressUpdates": [
+          {
+            "id": "0xa6c7fda744d7d54c17fd6076a0402f53b0ad94532e644a96544e0e9a51d4ad75-25",
+            "blockNumber": 11779738,
+            "timestamp": 1790345556,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"2\",\"coinType\":60,\"address\":\"0x000000000000000000000000000000000000beef\"}"
+          },
+          {
+            "id": "0x11a3279649025f5d37ff4c51c637b8ec8a0ad33c22aae05110e8c96044b8fd52-21",
+            "blockNumber": 11779713,
+            "timestamp": 1790345256,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"1\",\"coinType\":60,\"address\":\"0x416b0d0e0fcfbe1474c534b27a7c8f82bcedbbaa\"}"
+          },
+          {
+            "id": "0xee91c5935f17abfad4b66559825c720e92f40d8b8b1ca1c3e6a48d4f39d882f0-6",
+            "blockNumber": 11779654,
+            "timestamp": 1790344548,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"1\",\"coinType\":60,\"address\":\"0x000000000000000000000000000000000000dead\"}"
+          },
+          {
+            "id": "0xe06b2fdfef36b50b5a8bb33d99f472e825240afae62b5b536ca8614942d7b821-1",
+            "blockNumber": 11779452,
+            "timestamp": 1790342100,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"1\",\"coinType\":60,\"address\":\"0x416b0d0e0fcfbe1474c534b27a7c8f82bcedbbaa\"}"
+          },
+          {
+            "id": "0x360b102694768184664efcbde9832a333776dbf179c1e9e5984c64c0568e1436-389",
+            "blockNumber": 11779398,
+            "timestamp": 1790341452,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0xc54403186db35b9d92cc393ae665d3960117ac14\",\"recordId\":\"1\",\"coinType\":60,\"address\":\"0xc0f58df8753a4c53fd98c17e46e9f4ce6b8e9fa6\"}"
+          },
+          {
+            "id": "0x208cf05270a9fe37b0109e518c411f33da988e29db548610b9a0acf3b732e7a1-428",
+            "blockNumber": 11721565,
+            "timestamp": 1789621368,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0x49f5022dde516b92ac1609158bc6adc772088055\",\"recordId\":\"3\",\"coinType\":60,\"address\":\"0xc0f58df8753a4c53fd98c17e46e9f4ce6b8e9fa6\"}"
+          },
+          {
+            "id": "0xf43de02f93bc0f6d02ad1e938a4fe4267a9b558f094b2b38c0bb9b201a8a8f4b-296",
+            "blockNumber": 11721555,
+            "timestamp": 1789621248,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0x49f5022dde516b92ac1609158bc6adc772088055\",\"recordId\":\"2\",\"coinType\":60,\"address\":\"0xc0f58df8753a4c53fd98c17e46e9f4ce6b8e9fa6\"}"
+          },
+          {
+            "id": "0xca6c2f28266dbf563ddd5ff6d32d72ba4af8d93162753db211d6bd35b2497f81-293",
+            "blockNumber": 11721545,
+            "timestamp": 1789621128,
+            "type": "AddressUpdated",
+            "data": "{\"resolver\":\"0x49f5022dde516b92ac1609158bc6adc772088055\",\"recordId\":\"1\",\"coinType\":60,\"address\":\"0xc0f58df8753a4c53fd98c17e46e9f4ce6b8e9fa6\"}"
+          }
+        ],
+        "defaultLinks": [
+          {
+            "id": "0xa6c7fda744d7d54c17fd6076a0402f53b0ad94532e644a96544e0e9a51d4ad75-24",
+            "blockNumber": 11779738,
+            "timestamp": 1790345556,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0x7aaee2e6a4f493fc7840436d9e5bed788c714732\",\"recordId\":\"2\",\"node\":\"0x0000000000000000000000000000000000000000000000000000000000000000\",\"name\":\"\"}"
+          }
+        ]
+      }
+    }
+  }
+}

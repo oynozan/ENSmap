@@ -1,0 +1,37 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query Referrers($address: String!) {\n  registry(address: $address) {\n    referencedBy { name }\n  }\n}",
+      "variables": {
+        "address": "0x74dc5f00b1fb2c11b77e00cfe62539c886175476"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "registry": {
+          "referencedBy": [
+            {
+              "name": "tiny.test.gloomy.eth"
+            },
+            {
+              "name": "test.gloomy.eth"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

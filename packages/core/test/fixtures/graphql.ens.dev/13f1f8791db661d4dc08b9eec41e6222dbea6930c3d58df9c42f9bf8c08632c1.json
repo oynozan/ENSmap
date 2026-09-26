@@ -1,0 +1,56 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query DomainById($id: String!) {\n  domain(id: $id) {\n    id name labelName labelhash canonicalId protocol\n    owner { id } resolver { address } resolvedAddress { id }\n    subregistry { address } parent { id subregistry { address } }\n    registrationDate createdAt expiryDate\n  }\n}",
+      "variables": {
+        "id": "0xa8767d64c5f05e0f59414a9f9eba5cdad851b4e901ccaf3f364174d27e7ea175"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "domain": {
+          "id": "0xa8767d64c5f05e0f59414a9f9eba5cdad851b4e901ccaf3f364174d27e7ea175",
+          "name": "gloomy.eth",
+          "labelName": "gloomy",
+          "labelhash": "0x112190f9c4399d4ef816b294dc60e77cb52275b5d1a8e2b4fa6fd039e3f94042",
+          "canonicalId": "0x112190f9c4399d4ef816b294dc60e77cb52275b5d1a8e2b4fa6fd03900000000",
+          "protocol": "v2",
+          "owner": {
+            "id": "0x34045271c07cf636e4cb98ab7747ccb139f46ed6"
+          },
+          "resolver": {
+            "address": "0x6abdb69f50877061d417ca4c80d2b4d571c64115"
+          },
+          "resolvedAddress": {
+            "id": "0x0000000000000000000000000000000000000000"
+          },
+          "subregistry": {
+            "address": "0x1b8eb08af15ffd4d854a9ff4ac8b386056e377db"
+          },
+          "parent": {
+            "id": "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
+            "subregistry": {
+              "address": "0x657ea849311d3d5823348dded7c2aaafb3ede09e"
+            }
+          },
+          "registrationDate": 1789641204,
+          "createdAt": 1789641204,
+          "expiryDate": 1792060404
+        }
+      }
+    }
+  }
+}

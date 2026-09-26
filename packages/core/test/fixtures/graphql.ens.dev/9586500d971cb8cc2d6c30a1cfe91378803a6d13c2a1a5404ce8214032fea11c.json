@@ -1,0 +1,56 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query DomainById($id: String!) {\n  domain(id: $id) {\n    id name labelName labelhash canonicalId protocol\n    owner { id } resolver { address } resolvedAddress { id }\n    subregistry { address } parent { id subregistry { address } }\n    registrationDate createdAt expiryDate\n  }\n}",
+      "variables": {
+        "id": "0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91"
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "domain": {
+          "id": "0x1ba002b11b3c61f5721a5fd1edea641775dc866451e8192788512616dc829b91",
+          "name": "seller-a.eth",
+          "labelName": "seller-a",
+          "labelhash": "0x115f4e025c78ed6588b2837305afe6232e6f12ce0ed8d2707972e9b27b584604",
+          "canonicalId": "0x115f4e025c78ed6588b2837305afe6232e6f12ce0ed8d2707972e9b200000000",
+          "protocol": "v2",
+          "owner": {
+            "id": "0xc0f58df8753a4c53fd98c17e46e9f4ce6b8e9fa6"
+          },
+          "resolver": {
+            "address": "0xc54403186db35b9d92cc393ae665d3960117ac14"
+          },
+          "resolvedAddress": {
+            "id": "0xc0f58df8753a4c53fd98c17e46e9f4ce6b8e9fa6"
+          },
+          "subregistry": {
+            "address": "0xb093cec6d1cc355c40020f0df5103eceffd30dac"
+          },
+          "parent": {
+            "id": "0x93cdeb708b7545dc668eb9280176169d1c33cfd8ed6f04690a0bcc88a93fc4ae",
+            "subregistry": {
+              "address": "0x657ea849311d3d5823348dded7c2aaafb3ede09e"
+            }
+          },
+          "registrationDate": 1789621128,
+          "createdAt": 1789621128,
+          "expiryDate": 1821178728
+        }
+      }
+    }
+  }
+}
