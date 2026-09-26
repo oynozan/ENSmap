@@ -26,7 +26,7 @@
 }
 
 .status-warnings summary::before {
-  margin: 0 0.4em;
+  margin: 0 0.25em;
   content: '·';
 }
 

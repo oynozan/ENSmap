@@ -23,7 +23,8 @@ plan and spec deviations.
 - `packages/cli`: `ensmap tree <name>` today; `bonds`, `labels` and `map`
   arrive in later phases.
 - `apps/api`: HTTP API, Postgres with Drizzle migrations.
-- `apps/web`: not started yet. The frontend stays empty until the UI phase.
+- `apps/web`: Vite and React web map of a name's subname tree and wallets
+  (see [Web](#web)).
 
 ## Scripts
 
@@ -34,6 +35,7 @@ plan and spec deviations.
 - `pnpm run ci`: format:check, then lint, then typecheck, then db:drift,
   then test.
 - `pnpm run ensmap`: run the CLI (`packages/cli`).
+- `pnpm dev`: the API and the web app together (see [Web](#web)).
 
 ## Usage
 
@@ -74,6 +76,39 @@ API calls: ens-dev-graphql=5, rpc=12
 - API call counts per provider go to stderr after every run.
 - Exit codes: `0` ok, `1` invalid name or arguments, `2` name not found in the
   namespace's index, `3` a provider failed after its retries.
+
+## Web
+
+```sh
+pnpm dev
+```
+
+This starts the API on http://localhost:3000 and the web app on
+http://localhost:5173, which proxies `/api` to the API. Open
+http://localhost:5173 and search a name such as `seller-a.eth` or
+`gloomy.eth`, or link to one directly with `?name=gloomy.eth`.
+
+- The web covers the Sepolia ENSv2 Beta (`sepolia-v2`) only and has no
+  network control. It reads `GET /map/name/<name>?namespace=sepolia-v2`,
+  which the API caches in memory for 6 h.
+- Each name is a bubble, sized by the number of names below it and linked to
+  its parent. The outline is green for a verified wallet, faint for an
+  unverified one and dashed for a name with no wallet. A small coral dot marks
+  an expired name.
+- Drag to pan, and scroll or pinch to zoom; every label shows once zoomed
+  in. Hovering a bubble highlights every name on the same wallet. Clicking
+  one opens its details, and Esc or a click on empty space closes them.
+  Tabbing past the search bar reaches a list of every name on the map.
+- A lookup against the keyless public endpoints can take a minute or more;
+  the page gives up after 90 s.
+
+`pnpm --filter @ensmap/web screenshot`, run while `pnpm dev` is up, drives
+the installed Chrome through `playwright-core`. It saves desktop (1440 px)
+and phone (390 px) screenshots of `seller-a.eth` and `gloomy.eth`, plus the
+details panel, to `apps/web/.screenshots/`. It then prints the 95th-percentile
+frame time while panning and zooming a synthetic 301-node map, and exits 1
+above 20 ms. `--base <url>` points it at another dev server. It calls the
+live API and is not part of `pnpm run ci`.
 
 ## Environment
 

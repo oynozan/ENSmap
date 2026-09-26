@@ -259,4 +259,10 @@ Web:
 8. **Resolution path.** A node's wallet and effective resolver come from resolving its in-scope path. This differs from the canonical path for ENSv2 shared registries; see Task 1.8.
 9. **Caching.** Phase 1 persists and caches nothing across runs. The Store and read-through caching start in Phase 2.
 10. **CI and chains.** CI is local (`pnpm run ci`), and tests run on PGlite. `chains` config exists with default `[namespace chain]`; only coin type 60 on L1 is bound until a later phase adds L2 chains.
-
+11. The web is built before Phases 2–4, by user decision. Until Phase 4, the map shows names and wallets only.
+12. The web shows the `sepolia-v2` namespace only and has no network control.
+13. The graph schema and builder land early as a slice of Phase 4. Nodes gain the optional fields `verifiedBy`, `owner`, `canonical` and `sharedWith`, and `meta` gains `warnings`.
+14. Node kinds: the root and wallet home names are `name`; the others are `subname`.
+15. Until bonds exist, the default size metric is `subnamesHeld` (descendant count).
+16. There is no 250-name display cap and no "+N more" collapse yet. Everything fetched is shown, up to the 1,000-name fetch cap.
+17. The map cache is in memory, with the spec's 6 h TTL, until Phase 4 adds the `maps` table.

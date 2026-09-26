@@ -88,17 +88,18 @@
   overflow-wrap: anywhere;
 }
 
+/* 12px keeps a full address on one line of the 320px panel */
 .details-address {
+  display: block;
   color: var(--ash);
   font-family: var(--font-ui);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 300;
-  font-variant-numeric: tabular-nums;
   word-break: break-all;
 }
 
 .details-copy {
-  margin-left: 8px;
+  margin-top: 6px;
   padding: 1px 10px;
   border: 1px solid var(--line);
   border-radius: 999px;
@@ -106,7 +107,6 @@
   color: var(--ash);
   font: 300 12px/1.5 var(--font-ui);
   cursor: pointer;
-  vertical-align: 1px;
 }
 
 .details-copy:hover {

@@ -1,0 +1,48 @@
+.app {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+}
+
+.app-header {
+  padding: 20px 0 14px;
+}
+
+.app-main {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.app-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 0 24px 12vh;
+  color: var(--ash);
+  font: 100 20px/1.4 var(--font-display);
+  letter-spacing: 0.01em;
+  text-align: center;
+}
+
+.map-view {
+  position: absolute;
+  inset: 0;
+}
+
+.map-canvas {
+  display: block;
+  touch-action: none;
+}
+
+@media (width < 640px) {
+  .app-header {
+    padding: 16px 0 10px;
+  }
+
+  .app-empty {
+    font-size: 17px;
+  }
+}
