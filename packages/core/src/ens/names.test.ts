@@ -92,6 +92,20 @@ describe('interpretLabel', () => {
   it('returns the raw label when it is already normalized', () => {
     expect(interpretLabel('amazon', labelhash)).toBe('amazon');
   });
+
+  it('falls back to the bracketed labelhash for an empty label', () => {
+    expect(interpretLabel('', labelhash)).toBe(`[${HASH}]`);
+  });
+
+  it('falls back to the bracketed labelhash for a label containing a dot', () => {
+    expect(interpretLabel('a.b', labelhash)).toBe(`[${HASH}]`);
+  });
+
+  it('lowercases a mixed-case labelhash in the placeholder', () => {
+    const mixed: `0x${string}` = `0xAB${'cd'.repeat(31)}`;
+
+    expect(interpretLabel(null, mixed)).toBe(`[ab${'cd'.repeat(31)}]`);
+  });
 });
 
 describe('childName', () => {

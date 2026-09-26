@@ -70,7 +70,8 @@ export function parseNameInput(raw: string): ParseNameResult {
 
 export function interpretLabel(raw: string | null, labelhash: Hex): string {
   const placeholder = `[${labelhash.slice(2).toLowerCase()}]`;
-  if (raw === null) {
+  // ens_normalize accepts both, but neither is a single label
+  if (raw === null || raw === '' || raw.includes('.')) {
     return placeholder;
   }
   try {
