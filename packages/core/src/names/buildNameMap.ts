@@ -11,7 +11,7 @@ import { isResolvable, type InterpretedName } from '../ens/names.ts';
 import { ProviderError } from '../http/client.ts';
 import type { CallCounter } from '../http/counter.ts';
 import { redact } from '../http/redact.ts';
-import type { ChainReader } from '../rpc/chainReader.ts';
+import type { BlockTimes, ChainReader } from '../rpc/chainReader.ts';
 import type { EnsResolver, Resolution } from '../rpc/ensResolver.ts';
 import {
   bindingStart,
@@ -196,9 +196,9 @@ export async function buildNameMap(
   const { history, warning: historyWarning } = await readHistory(deps, bound);
 
   const missing = blocksWithoutTime(bound, resolutions, history);
-  const blockTimes =
+  const blockTimes: BlockTimes =
     missing.length === 0
-      ? new Map<bigint, Date>()
+      ? { times: new Map(), skipped: new Map() }
       : await deps.chain.blockTimestamps(missing);
 
   const bindings = deriveBindings({
@@ -208,7 +208,7 @@ export async function buildNameMap(
     resolutions,
     primaryNames,
     history,
-    blockTimes,
+    blockTimes: blockTimes.times,
   });
   const groups = assignHomeNames(bindings, tree, primaryNames);
 
@@ -224,10 +224,16 @@ export async function buildNameMap(
   if (historyWarning !== null) {
     warnings.push(historyWarning);
   }
-  const untimed = missing.filter((block) => !blockTimes.has(block)).length;
-  if (untimed > 0) {
+  const untimed = missing.filter((block) => !blockTimes.times.has(block));
+  if (untimed.length > 0) {
+    const [first, ...rest] = new Set(
+      untimed.flatMap((block) => blockTimes.skipped.get(block) ?? []),
+    );
+    const more = rest.length > 0 ? `; ${rest.length} more` : '';
+    const detail =
+      first === undefined ? '' : ` (${redact(first, deps.secrets)}${more})`;
     warnings.push(
-      `no block time from the RPC for ${untimed} of ${missing.length} binding start blocks, likely pruned history; those bindings use the registration date`,
+      `no block time from the RPC for ${untimed.length} of ${missing.length} binding start blocks${detail}; those bindings use the registration date`,
     );
   }
   if (tree.truncated) {

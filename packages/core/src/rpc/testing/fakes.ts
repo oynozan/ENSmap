@@ -61,6 +61,8 @@ export function createFakeEnsResolver(
 
 export interface FakeChainReaderOptions {
   blockTimes?: ReadonlyMap<bigint, Date>;
+  // Blocks left out of the times, with their skip reason
+  skipped?: ReadonlyMap<bigint, string>;
 }
 
 export interface FakeChainCall {
@@ -83,14 +85,19 @@ export function createFakeChainReader(
     blockTimestamps(blocks) {
       calls.push({ method: 'blockTimestamps', blocks: [...blocks] });
       const times = new Map<bigint, Date>();
+      const skipped = new Map<bigint, string>();
       for (const block of blocks) {
         const time = options.blockTimes?.get(block);
-        if (time === undefined) {
+        const reason = options.skipped?.get(block);
+        if (time !== undefined) {
+          times.set(block, time);
+        } else if (reason !== undefined) {
+          skipped.set(block, reason);
+        } else {
           return Promise.reject(new Error(`fake chain has no block ${block}`));
         }
-        times.set(block, time);
       }
-      return Promise.resolve(times);
+      return Promise.resolve({ times, skipped });
     },
   };
 }

@@ -96,6 +96,10 @@ describe(
       expect(nodes).toHaveLength(38);
       expect(map.calls['ens-subgraph']).toBeGreaterThanOrEqual(1);
       expect(stderr).toMatch(/^API calls: .*ens-subgraph=\d+/m);
+      // publicnode answered 4444 for the 6 start blocks before its horizon
+      expect(map.warnings).toContain(
+        'no block time from the RPC for 6 of 27 binding start blocks (RPC error 4444: pruned history unavailable: requested 9568829, earliest available 15500000; 5 more); those bindings use the registration date',
+      );
     });
 
     it('prints tiny.test.gloomy.eth once, with its other parent', async () => {

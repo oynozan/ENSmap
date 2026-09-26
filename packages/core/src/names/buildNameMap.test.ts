@@ -290,10 +290,19 @@ describe('buildNameMap', () => {
   it('falls back to the registration date and warns when the RPC has no block time', async () => {
     const world = rWorld();
 
+    const pruned = 'RPC error 4444: pruned history unavailable at /k3y';
+
     const result = await buildNameMap(
       {
         ...depsOf(world),
-        chain: { blockTimestamps: () => Promise.resolve(new Map()) },
+        chain: {
+          blockTimestamps: () =>
+            Promise.resolve({
+              times: new Map(),
+              skipped: new Map([[100n, pruned]]),
+            }),
+        },
+        secrets: ['/k3y'],
       },
       params('r.eth'),
       new CallCounter(),
@@ -305,7 +314,7 @@ describe('buildNameMap', () => {
       windowSource: 'unknown',
     });
     expect(result.warnings).toEqual([
-      'no block time from the RPC for 1 of 1 binding start blocks, likely pruned history; those bindings use the registration date',
+      'no block time from the RPC for 1 of 1 binding start blocks (RPC error 4444: pruned history unavailable at [redacted]); those bindings use the registration date',
     ]);
   });
 

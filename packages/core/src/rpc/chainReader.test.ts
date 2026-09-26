@@ -1,11 +1,7 @@
 import pLimit from 'p-limit';
-import {
-  BlockNotFoundError,
-  RpcRequestError,
-  UnknownRpcError,
-  type PublicClient,
-} from 'viem';
+import { UnknownRpcError, type PublicClient } from 'viem';
 import { describe, expect, it } from 'vitest';
+import { z } from 'zod';
 
 import { loadEnv, resolveNamespace } from '../config/index.ts';
 import {
@@ -21,6 +17,46 @@ import { createRpcClient } from './client.ts';
 
 const MAINNET = resolveNamespace('mainnet', loadEnv({}));
 const mode = fixtureMode(loadEnv());
+const BLOCK_TIME = new Date('2023-11-14T22:13:20.000Z');
+
+type Reply = { result: unknown } | { error: { code: number; message: string } };
+
+const BlockRequest = z.object({
+  id: z.number(),
+  params: z.tuple([z.string(), z.boolean()]),
+});
+
+function rpcError(code: number, message: string): Reply {
+  return { error: { code, message } };
+}
+
+// Replies per block through the real RPC client, so viem wraps errors as it does live
+function scriptedReader(replies: Readonly<Record<string, Reply>>) {
+  const fetch: typeof globalThis.fetch = async (input, init) => {
+    const { id, params } = BlockRequest.parse(
+      await new Request(input, init).json(),
+    );
+    const reply = replies[params[0]] ?? {
+      result: { number: params[0], timestamp: '0x6553f100', transactions: [] },
+    };
+    return Response.json({ jsonrpc: '2.0', id, ...reply });
+  };
+  const counter = new CallCounter();
+  const rpc = createHttpClient({
+    provider: 'rpc',
+    limits: MAINNET.rpc.limits,
+    counter,
+    secrets: [],
+    fetch,
+    sleep: () => Promise.resolve(),
+  });
+  const client = createRpcClient(MAINNET, {
+    rpc,
+    ccipLimit: pLimit(1),
+    counter,
+  });
+  return createChainReader(client, { concurrency: 1 });
+}
 
 describe('createChainReader', () => {
   it('rethrows a wrapped ProviderError as-is', async () => {
@@ -38,35 +74,59 @@ describe('createChainReader', () => {
     ).rejects.toBe(providerError);
   });
 
-  it('leaves out blocks the RPC answers with an error or does not have', async () => {
-    const client = {
-      getBlock: ({ blockNumber }: { blockNumber: bigint }) => {
-        if (blockNumber === 1n) {
-          // publicnode's answer for a block before its pruning horizon
-          return Promise.reject(
-            new RpcRequestError({
-              body: {},
-              error: {
-                code: 4444,
-                message: 'pruned history unavailable',
-              },
-              url: 'https://rpc.example',
-            }),
-          );
-        }
-        if (blockNumber === 2n) {
-          return Promise.reject(new BlockNotFoundError({ blockNumber }));
-        }
-        return Promise.resolve({ timestamp: 1_700_000_000n });
-      },
-    } as unknown as PublicClient;
+  it('leaves out a block the RPC does not have', async () => {
+    const reader = scriptedReader({ '0x2': { result: null } });
 
-    const times = await createChainReader(client, {
-      concurrency: 1,
-    }).blockTimestamps([1n, 2n, 3n]);
+    const { times, skipped } = await reader.blockTimestamps([2n, 3n]);
 
-    expect(times).toEqual(
-      new Map([[3n, new Date('2023-11-14T22:13:20.000Z')]]),
+    expect(times).toEqual(new Map([[3n, BLOCK_TIME]]));
+    expect(skipped).toEqual(new Map([[2n, 'block not found']]));
+  });
+
+  it('leaves out a block pruned with code 4444, keeping the code and message', async () => {
+    // publicnode's answer for a block before its pruning horizon
+    const reader = scriptedReader({
+      '0x1': rpcError(4444, 'pruned history unavailable'),
+    });
+
+    const { times, skipped } = await reader.blockTimestamps([1n, 3n]);
+
+    expect(times).toEqual(new Map([[3n, BLOCK_TIME]]));
+    expect(skipped).toEqual(
+      new Map([[1n, 'RPC error 4444: pruned history unavailable']]),
+    );
+  });
+
+  it.each([
+    'pruned history unavailable',
+    'history is unavailable',
+    'history expired',
+  ])('leaves out a block answered -32000 %j', async (message) => {
+    const reader = scriptedReader({ '0x1': rpcError(-32000, message) });
+
+    const { times, skipped } = await reader.blockTimestamps([1n]);
+
+    expect(times.size).toBe(0);
+    expect(skipped).toEqual(new Map([[1n, `RPC error -32000: ${message}`]]));
+  });
+
+  it('rethrows a -32000 error that is not about pruned history', async () => {
+    const reader = scriptedReader({
+      '0x1': rpcError(-32000, 'some other error'),
+    });
+
+    await expect(reader.blockTimestamps([1n])).rejects.toThrow(
+      /some other error/,
+    );
+  });
+
+  it('rethrows another code even when its message mentions pruning', async () => {
+    const reader = scriptedReader({
+      '0x1': rpcError(-32602, 'pruned history unavailable'),
+    });
+
+    await expect(reader.blockTimestamps([1n])).rejects.toThrow(
+      /pruned history unavailable/,
     );
   });
 
@@ -103,7 +163,7 @@ describe('createChainReader', () => {
         counter,
       });
 
-      const times = await createChainReader(client, {
+      const { times } = await createChainReader(client, {
         concurrency: 4,
       }).blockTimestamps([17_000_000n, 17_000_000n]);
 
