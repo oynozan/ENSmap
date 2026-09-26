@@ -8,7 +8,7 @@ import {
   fixtureMode,
 } from '../http/fixtures.ts';
 import { buildNameMap, type NameMapResult } from '../names/buildNameMap.ts';
-import { createNamespaceDeps } from '../sources/index.ts';
+import { createNamespaceDeps, type NamespaceGates } from '../sources/index.ts';
 
 export interface LoadNameMapOptions {
   env: Env;
@@ -18,6 +18,7 @@ export interface LoadNameMapOptions {
   now?: () => number;
   // Defaults to the namespace's fetch cap
   fetchCap?: number;
+  gates?: NamespaceGates;
 }
 
 // Shared by the CLI and the API, NameNotFoundError and ProviderError pass through unchanged
@@ -37,6 +38,7 @@ export async function loadNameMap(
     fetch,
     sleep: opts.sleep,
     now: opts.now,
+    gates: opts.gates,
   });
   const now = opts.now ?? Date.now;
 

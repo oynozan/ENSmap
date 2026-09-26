@@ -104,6 +104,35 @@ function parseRetryAfter(headers: Headers, now: number): number | null {
   return Number.isNaN(at) ? null : Math.max(0, at - now);
 }
 
+// A provider's concurrency slots and start spacing, shareable across clients
+export interface RequestGate {
+  run<T>(fn: () => Promise<T>): Promise<T>;
+  throttle(): Promise<void>;
+}
+
+export function createRequestGate(
+  limits: Pick<ProviderLimits, 'concurrency' | 'minIntervalMs'>,
+  opts: { sleep?: (ms: number) => Promise<void>; now?: () => number } = {},
+): RequestGate {
+  const sleep = opts.sleep ?? ((ms: number) => delay(ms));
+  const now = opts.now ?? (() => Date.now());
+  const limit = pLimit(limits.concurrency);
+  let nextStartAt = Number.NEGATIVE_INFINITY;
+
+  return {
+    run: (fn) => limit(fn),
+    // Reserve the slot before waiting so concurrent callers queue behind it
+    async throttle() {
+      const at = now();
+      const startAt = Math.max(at, nextStartAt);
+      nextStartAt = startAt + limits.minIntervalMs;
+      if (startAt > at) {
+        await sleep(startAt - at);
+      }
+    },
+  };
+}
+
 export function createHttpClient(opts: {
   provider: string;
   limits: ProviderLimits;
@@ -113,14 +142,15 @@ export function createHttpClient(opts: {
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
   random?: () => number;
+  // Defaults to a gate of this client's own
+  gate?: RequestGate;
 }): HttpClient {
   const { provider, limits, counter, secrets } = opts;
   const fetchImpl = opts.fetch ?? ((input, init) => fetch(input, init));
   const sleep = opts.sleep ?? ((ms: number) => delay(ms));
   const now = opts.now ?? (() => Date.now());
   const random = opts.random ?? (() => Math.random());
-  const limit = pLimit(limits.concurrency);
-  let nextStartAt = Number.NEGATIVE_INFINITY;
+  const gate = opts.gate ?? createRequestGate(limits, { sleep, now });
 
   async function wait(ms: number): Promise<void> {
     if (ms > 0) {
@@ -140,14 +170,6 @@ export function createHttpClient(opts: {
       provider,
       ...fields,
     });
-  }
-
-  // Reserve the slot before waiting so concurrent callers queue behind it
-  async function throttle(): Promise<void> {
-    const at = now();
-    const startAt = Math.max(at, nextStartAt);
-    nextStartAt = startAt + limits.minIntervalMs;
-    await wait(startAt - at);
   }
 
   async function send(
@@ -185,7 +207,7 @@ export function createHttpClient(opts: {
     req: HttpRequest,
     schema: z.ZodType<T>,
   ): Promise<T> {
-    await throttle();
+    await gate.throttle();
     counter.inc(provider);
     const target = `${req.method} ${req.url}`;
     const { response, text } = await send(req, target);
@@ -259,7 +281,7 @@ export function createHttpClient(opts: {
   return {
     provider,
     json<T>(req: HttpRequest, schema: z.ZodType<T>): Promise<T> {
-      return limit(async () => {
+      return gate.run(async () => {
         for (let attemptIndex = 0; ; attemptIndex += 1) {
           try {
             return await attempt(req, schema);

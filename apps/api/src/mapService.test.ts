@@ -147,12 +147,38 @@ describe('createCachedMapService', () => {
     }
     expect(calls).toHaveLength(101);
 
-    await maps.nameMap('sepolia-v2', name('n101.eth'));
+    for (const kept of ['n2.eth', 'n50.eth', 'n101.eth']) {
+      await maps.nameMap('sepolia-v2', name(kept));
+    }
     expect(calls).toHaveLength(101);
 
     await maps.nameMap('sepolia-v2', name('n1.eth'));
     expect(calls).toHaveLength(102);
     expect(calls.at(-1)).toBe('sepolia-v2:n1.eth');
+  });
+
+  it('never evicts a build that is still in flight', async () => {
+    const { maps, calls, setBuild } = setup();
+    let release: (value: Graph) => void = () => undefined;
+    setBuild(
+      () =>
+        new Promise<Graph>((resolve) => {
+          release = resolve;
+        }),
+    );
+    const pending = maps.nameMap('sepolia-v2', name('slow.eth'));
+
+    setBuild((namespace, root) => Promise.resolve(graph(namespace, root)));
+    for (let i = 1; i <= MAP_CACHE_MAX_ENTRIES; i += 1) {
+      await maps.nameMap('sepolia-v2', name(`n${i}.eth`));
+    }
+    const again = maps.nameMap('sepolia-v2', name('slow.eth'));
+    release(graph('sepolia-v2', 'slow.eth'));
+
+    expect(await again).toBe(await pending);
+    expect(calls.filter((call) => call === 'sepolia-v2:slow.eth')).toHaveLength(
+      1,
+    );
   });
 
   it('keys entries by namespace and name', async () => {

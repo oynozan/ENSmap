@@ -3,6 +3,7 @@ import { z } from 'zod';
 
 import {
   createHttpClient,
+  createRequestGate,
   ProviderError,
   type Classifier,
   type HttpRequest,
@@ -163,6 +164,43 @@ describe('createHttpClient retries and limits', () => {
     await Promise.all(Array.from({ length: 10 }, () => http.json(REQ, OK)));
 
     expect(maxInFlight).toBe(2);
+  });
+
+  it('shares a gate between clients while each keeps its own counter', async () => {
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const fetch: typeof globalThis.fetch = async () => {
+      inFlight += 1;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((resolve) => setImmediate(resolve));
+      inFlight -= 1;
+      return new Response('{"ok":true}', { status: 200 });
+    };
+    const limits = { ...LIMITS, concurrency: 2 };
+    const gate = createRequestGate(limits);
+    const counters = [new CallCounter(), new CallCounter()];
+    const clients = counters.map((counter) =>
+      createHttpClient({
+        provider: PROVIDER,
+        limits,
+        counter,
+        secrets: [],
+        fetch,
+        gate,
+      }),
+    );
+
+    await Promise.all(
+      clients.flatMap((http) =>
+        Array.from({ length: 5 }, () => http.json(REQ, OK)),
+      ),
+    );
+
+    expect(maxInFlight).toBe(2);
+    expect(counters.map((counter) => counter.snapshot())).toEqual([
+      { [PROVIDER]: 5 },
+      { [PROVIDER]: 5 },
+    ]);
   });
 
   it('spaces request starts by minIntervalMs through the injected sleep', async () => {

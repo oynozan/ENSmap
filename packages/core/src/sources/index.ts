@@ -5,7 +5,12 @@ import type {
   NameSourceKind,
   NamespaceConfig,
 } from '../config/namespaces.ts';
-import { createHttpClient, type HttpClient } from '../http/client.ts';
+import {
+  createHttpClient,
+  createRequestGate,
+  type HttpClient,
+  type RequestGate,
+} from '../http/client.ts';
 import type { CallCounter } from '../http/counter.ts';
 import type { NamespaceDeps } from '../names/buildNameMap.ts';
 import type { NameSource } from '../names/types.ts';
@@ -17,11 +22,31 @@ import { createEnsSubgraphSource } from './ens-subgraph/index.ts';
 
 export { createEnsDevGraphqlSource, createEnsSubgraphSource };
 
+// Provider limits, shared by every build that should respect them together
+export interface NamespaceGates {
+  names: RequestGate;
+  rpc: RequestGate;
+  ccip: <T>(fn: () => Promise<T>) => Promise<T>;
+}
+
 export interface NamespaceDepsOptions {
   counter: CallCounter;
   fetch?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
   now?: () => number;
+  // Defaults to gates of this build's own
+  gates?: NamespaceGates;
+}
+
+export function createNamespaceGates(
+  cfg: NamespaceConfig,
+  opts: { sleep?: (ms: number) => Promise<void>; now?: () => number } = {},
+): NamespaceGates {
+  return {
+    names: createRequestGate(cfg.nameSource.limits, opts),
+    rpc: createRequestGate(cfg.rpc.limits, opts),
+    ccip: pLimit(cfg.ccipLimits.concurrency),
+  };
 }
 
 export function createNameSource(
@@ -54,20 +79,23 @@ export function createNamespaceDeps(
   opts: NamespaceDepsOptions,
 ): NamespaceDeps {
   const { counter, fetch, sleep, now } = opts;
+  const gates = opts.gates ?? createNamespaceGates(cfg, { sleep, now });
   const shared = { counter, secrets: cfg.secrets, fetch, sleep, now };
   const namesHttp = createHttpClient({
     provider: cfg.nameSource.kind,
     limits: cfg.nameSource.limits,
+    gate: gates.names,
     ...shared,
   });
   const rpcHttp = createHttpClient({
     provider: 'rpc',
     limits: cfg.rpc.limits,
+    gate: gates.rpc,
     ...shared,
   });
   const client = createRpcClient(cfg, {
     rpc: rpcHttp,
-    ccipLimit: pLimit(cfg.ccipLimits.concurrency),
+    ccipLimit: gates.ccip,
     counter,
   });
   const concurrency = cfg.rpc.limits.concurrency;

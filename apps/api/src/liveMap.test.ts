@@ -1,4 +1,4 @@
-import { loadEnv } from '@ensmap/core/config';
+import { loadEnv, resolveNamespace } from '@ensmap/core/config';
 import { parseNameInput, type InterpretedName } from '@ensmap/core/ens';
 import { createFixtureFetch, FIXTURES_DIR } from '@ensmap/core/http';
 import { Graph } from '@ensmap/core/schema';
@@ -72,5 +72,42 @@ describe('createLiveMapService against recorded fixtures', () => {
     expect(lines[0]).toMatch(
       /^map sepolia-v2 seller-a\.eth · API calls: .*ens-dev-graphql=\d+/,
     );
+  });
+});
+
+describe('createLiveMapService provider limits', () => {
+  it('shares each provider limit across concurrent builds', async () => {
+    const env = loadEnv({ ENSMAP_FIXTURES: 'off' });
+    let inFlight = 0;
+    let peak = 0;
+    // Holds every request briefly, then fails it without a retry
+    const fetch: typeof globalThis.fetch = async () => {
+      inFlight += 1;
+      peak = Math.max(peak, inFlight);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+      inFlight -= 1;
+      return new Response('{}', { status: 400 });
+    };
+    const lines: string[] = [];
+    const maps = createLiveMapService({
+      env,
+      fetch,
+      sleep: () => Promise.resolve(),
+      log: (line) => lines.push(line),
+    });
+
+    const names = ['a', 'b', 'c', 'd', 'e'].map((label) =>
+      name(`${label}.eth`),
+    );
+    await Promise.allSettled(
+      names.map((root) => maps.nameMap('sepolia-v2', root)),
+    );
+
+    const limit = resolveNamespace('sepolia-v2', env).nameSource.limits;
+    expect(peak).toBe(limit.concurrency);
+    expect(lines).toHaveLength(names.length);
+    for (const line of lines) {
+      expect(line).toMatch(/ens-dev-graphql=1$/);
+    }
   });
 });

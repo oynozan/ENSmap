@@ -1,10 +1,12 @@
 export {
   createHttpClient,
+  createRequestGate,
   ProviderError,
   type Classifier,
   type HttpClient,
   type HttpRequest,
   type ProviderLimits,
+  type RequestGate,
 } from './client.ts';
 export { CallCounter } from './counter.ts';
 export {

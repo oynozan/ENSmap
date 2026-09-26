@@ -13,6 +13,10 @@ import { buildGraph } from '@ensmap/core/graph';
 import { CallCounter } from '@ensmap/core/http';
 import { loadNameMap } from '@ensmap/core/pipeline';
 import type { Graph } from '@ensmap/core/schema';
+import {
+  createNamespaceGates,
+  type NamespaceGates,
+} from '@ensmap/core/sources';
 
 export interface MapService {
   nameMap(namespace: NamespaceId, name: InterpretedName): Promise<Graph>;
@@ -58,11 +62,14 @@ export function createCachedMapService(
       };
       entries.delete(key);
       entries.set(key, entry);
-      for (const oldest of entries.keys()) {
+      for (const [oldestKey, oldest] of entries) {
         if (entries.size <= opts.maxEntries) {
           break;
         }
-        entries.delete(oldest);
+        // Evicting a build in flight would let a repeat request start a second one
+        if (oldest.storedAt !== null) {
+          entries.delete(oldestKey);
+        }
       }
 
       entry.graph.then(
@@ -96,9 +103,17 @@ export function createLiveMapService(deps: LiveMapDeps): MapService {
       console.log(line);
     });
 
+  // One gate set per namespace, so overlapping builds share each provider's limits
+  const gates = new Map<NamespaceId, NamespaceGates>();
+
   return createCachedMapService(
     async (namespace, name) => {
       const cfg = resolveNamespace(namespace, deps.env);
+      let shared = gates.get(namespace);
+      if (shared === undefined) {
+        shared = createNamespaceGates(cfg, { sleep: deps.sleep, now });
+        gates.set(namespace, shared);
+      }
       const counter = new CallCounter();
       try {
         const result = await loadNameMap(cfg, name, {
@@ -107,6 +122,7 @@ export function createLiveMapService(deps: LiveMapDeps): MapService {
           fetch: deps.fetch,
           sleep: deps.sleep,
           now,
+          gates: shared,
         });
         return buildGraph(result, {
           computedAt: new Date(now()),
