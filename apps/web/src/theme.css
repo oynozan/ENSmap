@@ -1,0 +1,40 @@
+:root {
+  --ground: #191919;
+  --bone: #e6e3dc;
+  --ash: #9a9894;
+  --line: #6a6a6a;
+  --sage: #8fc1a9;
+  --coral: #e08a7a;
+  --font-display: 'Lexend Deca Variable', sans-serif;
+  --font-ui: 'Manrope Variable', sans-serif;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  overflow: hidden;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--bone);
+  font: 200 15px/1.5 var(--font-ui);
+}
+
+:focus-visible {
+  outline: 1px solid var(--bone);
+  outline-offset: 2px;
+}
+
+/* !important and the pseudo-elements so component rules (the panel slide,
+   the button's ::after spinner) cannot win over this reset. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -7,6 +7,7 @@
     ".": "./src/app.ts"
   },
   "scripts": {
+    "dev": "tsx watch src/server.ts",
     "typecheck": "tsc -p tsconfig.json"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

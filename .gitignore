@@ -8,5 +8,9 @@ dist/
 coverage/
 .data/
 
+# Web build output and local screenshots
+apps/web/dist/
+apps/web/.screenshots/
+
 # Agent git worktrees (local tooling)
 .claude/worktrees/
