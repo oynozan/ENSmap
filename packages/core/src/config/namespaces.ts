@@ -60,6 +60,7 @@ const KEYLESS_SUBGRAPH_LIMITS = limitsWith({
 const KEYED_SUBGRAPH_LIMITS = limitsWith({ concurrency: 4, minIntervalMs: 0 });
 const GRAPHQL_ENS_DEV_LIMITS = limitsWith({ concurrency: 2, minIntervalMs: 0 });
 const KEYLESS_RPC_LIMITS = limitsWith({ concurrency: 2, minIntervalMs: 100 });
+// Chosen default, not brief-pinned: treated as a paid/user-controlled endpoint.
 const PAID_RPC_LIMITS = limitsWith({ concurrency: 4, minIntervalMs: 0 });
 const CCIP_LIMITS = limitsWith({ concurrency: 2, minIntervalMs: 0 });
 
@@ -120,12 +121,21 @@ function dedupe(values: string[]): string[] {
 function overrideNameSource(
   kind: NameSourceKind,
   url: string,
+  env: Env,
 ): EndpointConfig & { kind: NameSourceKind } {
+  const key = env.GRAPH_API_KEY;
+  // R11: forwarding the Graph key to an arbitrary user-chosen host would
+  // leak it, so only attach it when the override URL is the Graph gateway.
+  const isGraphGateway =
+    kind === 'ens-subgraph' &&
+    key !== undefined &&
+    new URL(url).hostname === 'gateway.thegraph.com';
   return {
     kind,
     url,
-    headers: {},
-    keyless: true,
+    headers: isGraphGateway ? { authorization: `Bearer ${key}` } : {},
+    // A user-supplied source URL override is never keyless (R11).
+    keyless: false,
     limits:
       kind === 'ens-subgraph' ? KEYED_SUBGRAPH_LIMITS : GRAPHQL_ENS_DEV_LIMITS,
   };
@@ -136,7 +146,7 @@ function resolveMainnetNameSource(
 ): EndpointConfig & { kind: NameSourceKind } {
   const kind = env.ENS_SOURCE_KIND_MAINNET ?? 'ens-subgraph';
   if (env.ENS_SOURCE_URL_MAINNET !== undefined) {
-    return overrideNameSource(kind, env.ENS_SOURCE_URL_MAINNET);
+    return overrideNameSource(kind, env.ENS_SOURCE_URL_MAINNET, env);
   }
   if (kind !== 'ens-subgraph') {
     throw new Error(
@@ -168,7 +178,7 @@ function resolveSepoliaV2NameSource(
 ): EndpointConfig & { kind: NameSourceKind } {
   const kind = env.ENS_SOURCE_KIND_SEPOLIA_V2 ?? 'ens-dev-graphql';
   if (env.ENS_SOURCE_URL_SEPOLIA_V2 !== undefined) {
-    return overrideNameSource(kind, env.ENS_SOURCE_URL_SEPOLIA_V2);
+    return overrideNameSource(kind, env.ENS_SOURCE_URL_SEPOLIA_V2, env);
   }
   if (kind !== 'ens-dev-graphql') {
     throw new Error(

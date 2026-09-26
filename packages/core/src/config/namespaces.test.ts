@@ -128,6 +128,94 @@ describe('resolveNamespace', () => {
     );
   });
 
+  describe('ENS_SOURCE_URL override (R11)', () => {
+    it('is never keyless for a mainnet override with the default kind', () => {
+      const ns = resolveNamespace(
+        'mainnet',
+        loadEnv({
+          ENS_SOURCE_URL_MAINNET:
+            'https://my-graph-node.example/subgraphs/name/ens',
+        }),
+      );
+
+      expect(ns.nameSource.keyless).toBe(false);
+    });
+
+    it('is never keyless for a mainnet override with kind ens-dev-graphql', () => {
+      const ns = resolveNamespace(
+        'mainnet',
+        loadEnv({
+          ENS_SOURCE_KIND_MAINNET: 'ens-dev-graphql',
+          ENS_SOURCE_URL_MAINNET: 'https://example.test/graphql',
+        }),
+      );
+
+      expect(ns.nameSource.keyless).toBe(false);
+    });
+
+    it('is never keyless for a sepolia-v2 override with the default kind', () => {
+      const ns = resolveNamespace(
+        'sepolia-v2',
+        loadEnv({ ENS_SOURCE_URL_SEPOLIA_V2: 'https://example.test/graphql' }),
+      );
+
+      expect(ns.nameSource.keyless).toBe(false);
+    });
+
+    it('is never keyless for a sepolia-v2 override with kind ens-subgraph', () => {
+      const ns = resolveNamespace(
+        'sepolia-v2',
+        loadEnv({
+          ENS_SOURCE_KIND_SEPOLIA_V2: 'ens-subgraph',
+          ENS_SOURCE_URL_SEPOLIA_V2:
+            'https://my-graph-node.example/subgraphs/name/ens',
+        }),
+      );
+
+      expect(ns.nameSource.keyless).toBe(false);
+    });
+
+    it('attaches the Graph bearer header when the override host is exactly gateway.thegraph.com', () => {
+      const ns = resolveNamespace(
+        'mainnet',
+        loadEnv({
+          ENS_SOURCE_URL_MAINNET:
+            'https://gateway.thegraph.com/api/subgraphs/id/other-id',
+          GRAPH_API_KEY: 'g',
+        }),
+      );
+
+      expect(ns.nameSource.headers['authorization']).toBe('Bearer g');
+    });
+
+    it('does not forward the Graph key to an arbitrary override host', () => {
+      const ns = resolveNamespace(
+        'mainnet',
+        loadEnv({
+          ENS_SOURCE_URL_MAINNET:
+            'https://my-graph-node.example/subgraphs/name/ens',
+          GRAPH_API_KEY: 'g',
+        }),
+      );
+
+      expect(ns.nameSource.headers['authorization']).toBeUndefined();
+    });
+
+    it('does not attach the Graph key when the overridden kind is ens-dev-graphql', () => {
+      const ns = resolveNamespace(
+        'mainnet',
+        loadEnv({
+          ENS_SOURCE_KIND_MAINNET: 'ens-dev-graphql',
+          ENS_SOURCE_URL_MAINNET:
+            'https://gateway.thegraph.com/api/subgraphs/id/other-id',
+          GRAPH_API_KEY: 'g',
+        }),
+      );
+
+      expect(ns.nameSource.headers['authorization']).toBeUndefined();
+    });
+  });
+
   describe('shared defaults', () => {
     it('sets fetchCap, maxLevels and ccipLimits concurrency', () => {
       const ns = resolveNamespace('mainnet', loadEnv({}));
