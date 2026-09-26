@@ -1,0 +1,40 @@
+{
+  "name": "@ensmap/web",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p scripts && vite build",
+    "screenshot": "tsx scripts/screenshot.ts"
+  },
+  "dependencies": {
+    "@ensmap/core": "workspace:*",
+    "@fontsource-variable/lexend-deca": "catalog:",
+    "@fontsource-variable/manrope": "catalog:",
+    "d3-force": "catalog:",
+    "d3-selection": "catalog:",
+    "d3-zoom": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "catalog:",
+    "@testing-library/react": "catalog:",
+    "@testing-library/user-event": "catalog:",
+    "@types/d3-force": "catalog:",
+    "@types/d3-selection": "catalog:",
+    "@types/d3-zoom": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "jsdom": "catalog:",
+    "playwright-core": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}
