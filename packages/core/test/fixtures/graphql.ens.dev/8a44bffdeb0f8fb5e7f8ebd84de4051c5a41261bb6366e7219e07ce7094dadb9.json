@@ -1,0 +1,68 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://graphql.ens.dev/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query NodeHistory($nodes: [EventFilter!]!) {\n  events(\n    first: 1000\n    where: { type_in: [\"Linked\", \"ResolverUpdated\"], or: $nodes }\n  ) {\n    id blockNumber timestamp type data namehash\n  }\n}",
+      "variables": {
+        "nodes": [
+          {
+            "namehash": "0xb467873ca0c1ac1059dfa0753d192f7a603f4d114b4f864625955b8970f4a4ce"
+          },
+          {
+            "namehash": "0x72cc13a755237a2de81446cc86b0aeb575ab264c3598a66bdcded002b16a3618"
+          }
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "events": [
+          {
+            "id": "0xff7c77cfab440db4b2da90632e319ff0a982b97250ca18695849fa80a7d51d25-4",
+            "blockNumber": 11774319,
+            "timestamp": 1790280432,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0x6abdb69f50877061d417ca4c80d2b4d571c64115\",\"recordId\":\"30\",\"node\":\"0x72cc13a755237a2de81446cc86b0aeb575ab264c3598a66bdcded002b16a3618\",\"name\":\"test.tiny.gloomy.eth\"}",
+            "namehash": "0x72cc13a755237a2de81446cc86b0aeb575ab264c3598a66bdcded002b16a3618"
+          },
+          {
+            "id": "0x9293bfe082ade3c3d25d8904b42b6baefeebe8527d06dfe16653754012ad1c3a-19",
+            "blockNumber": 11773884,
+            "timestamp": 1790275212,
+            "type": "Linked",
+            "data": "{\"resolver\":\"0x6abdb69f50877061d417ca4c80d2b4d571c64115\",\"recordId\":\"26\",\"node\":\"0xb467873ca0c1ac1059dfa0753d192f7a603f4d114b4f864625955b8970f4a4ce\",\"name\":\"test.gloomy.eth\"}",
+            "namehash": "0xb467873ca0c1ac1059dfa0753d192f7a603f4d114b4f864625955b8970f4a4ce"
+          },
+          {
+            "id": "0x2633c08d4ed593052b4f2c1932c8f8c06fc4a73b4aaaa1c4fe861d75033af458-39",
+            "blockNumber": 11723195,
+            "timestamp": 1789641600,
+            "type": "ResolverUpdated",
+            "data": "{\"tokenId\":70622639689279718371527342103894932928233838121221666359043189029711095267328,\"resolver\":\"0x6abdb69f50877061d417ca4c80d2b4d571c64115\",\"sender\":\"0x34045271c07cf636e4cb98ab7747ccb139f46ed6\"}",
+            "namehash": "0xb467873ca0c1ac1059dfa0753d192f7a603f4d114b4f864625955b8970f4a4ce"
+          },
+          {
+            "id": "0xd342a3eaedadd290ddf76507616ca98f2445a271a24c140a33428ce95f3ab9ee-51",
+            "blockNumber": 11723190,
+            "timestamp": 1789641540,
+            "type": "ResolverUpdated",
+            "data": "{\"tokenId\":70622639689279718371527342103894932928233838121221666359043189029711095267328,\"resolver\":\"0x6abdb69f50877061d417ca4c80d2b4d571c64115\",\"sender\":\"0x34045271c07cf636e4cb98ab7747ccb139f46ed6\"}",
+            "namehash": "0x72cc13a755237a2de81446cc86b0aeb575ab264c3598a66bdcded002b16a3618"
+          }
+        ]
+      }
+    }
+  }
+}

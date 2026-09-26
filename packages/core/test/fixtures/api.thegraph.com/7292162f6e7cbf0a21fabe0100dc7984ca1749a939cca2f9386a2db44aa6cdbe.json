@@ -1,0 +1,139 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query Children($parents: [String!]!, $after: ID!) {\n  domains(\n    first: 1000\n    orderBy: id\n    orderDirection: asc\n    where: {\n      and: [\n        { parent_in: $parents }\n        { id_gt: $after }\n        { or: [{ owner_not: \"0x0000000000000000000000000000000000000000\" }, { resolver_not: null }] }\n      ]\n    }\n  ) {\n    id name labelName labelhash parent { id } owner { id }\n    registrant { id } wrappedOwner { id } resolver { address }\n    resolvedAddress { id } createdAt expiryDate\n    registration { registrationDate expiryDate }\n  }\n}",
+      "variables": {
+        "parents": [
+          "0x50a74dcf107973068dfc00db69ecf98b49d52f5361cb4db5feb740fc9f4f74d1",
+          "0x9e5c7a2f2ab8b565c6d2c4851a73decb53d1f6a23c97a2b5b66f21d8ace1bbd5",
+          "0xc867d2bd24b8a88c7d5d416dfab28fec6858b5a86f3a1c94faeab450c34023f6",
+          "0xceecb75ad42a60ea38b777bf842c14af3303219e2722a192ddeac19faa7fbb1c",
+          "0xe55e79685b24c7b16542f3c613a8899986ace5e2e08b3c9444ce70d81d49bcd2",
+          "0x250712f87e86832e8bed775a563920aed01b926d9d21950e363a042af40ad2b5",
+          "0x3124e45545d17d9fda8e24a7a09f111a0802ea26ce6b1f14c75c832442deb65d",
+          "0x287e74fe5b4463a7e8b8d4c4cccae51a8ab397df053bc829c6a4e26963c7ce2b",
+          "0x08625bbdd59ae52e6a0e3f8f2bd6213e60ad35276510c83d117c7a2a68bc65c0",
+          "0x44ea949951a1e21fe141e9979ef9af0cef3df0ac50004c19309df97fef6c9023",
+          "0xfbc2d3003f782aabc31cac76375888990f1d7f047c33a36e1975e71de5ce0280",
+          "0x761031277d539800dbfd27cfd8e7d0b37eef7dc3c3e2748363dd6f0378fc5bde",
+          "0xb392bc6cd948e44f06e6814b15210d1e8a5cab275050dfcf03d31bd2c657de57",
+          "0x29b0710df2cd225c4276389746509acdc5c369fccd2df16d83a0aded91ddba84",
+          "0x64d16903417c5a3048eb166f7627149fd87a4951641caa06839be1356ba78053",
+          "0x5b3b6afacf396089904ab1850a0c75b0b7ccc116d2b1afd7c1be7a0b442653ad",
+          "0x23e6467f045d0a8a6bb77dfcb215bfbd727496b4209d96a9aecd0da0b2e00868",
+          "0xc80bb329ad070734e9c503151c00f639f8a6acae8c9e76c730d272547417ce2f",
+          "0x861a0f4aa5f9e828249d23933af092f54a594b5db09d8912ca92152b70730b5a",
+          "0xce3a6d2df7a31ff2dc1065fd34d7baa711486d8fda7591fc6ef2566f875d2fec",
+          "0x75d58753a748d6adc83b99bf4c6847b65b5583faddc2973e731cfde076501751",
+          "0x22f4337bba67e073a1dcc4e388cc8dce827b4f58331532b1b1a1a5607ec21ff7"
+        ],
+        "after": ""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "domains": [
+          {
+            "id": "0x03667462fc274b7c622fd4dd28ec28e8d49a5b61629e78007e4be64621dd21bb",
+            "name": "eco.wg.ens.eth",
+            "labelName": "eco",
+            "labelhash": "0x9a796704fc9f59d08950db4f9f07b0f959e2ac8db38319dd0bcc83c57da9d079",
+            "parent": {
+              "id": "0x75d58753a748d6adc83b99bf4c6847b65b5583faddc2973e731cfde076501751"
+            },
+            "owner": {
+              "id": "0x70b8769b09af7447886620c20854c8b9119b5fee"
+            },
+            "registrant": null,
+            "wrappedOwner": null,
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            },
+            "resolvedAddress": null,
+            "createdAt": "1706582087",
+            "expiryDate": null,
+            "registration": null
+          },
+          {
+            "id": "0x20b7e2ef9af3548ed03c0674607fa6619c7379e79d990684a8b527cbe493e96f",
+            "name": "pg.wg.ens.eth",
+            "labelName": "pg",
+            "labelhash": "0x464cc47399f78aef9509e8924b85a9c00ba6e1f1ba0d7313811053c6b091ca81",
+            "parent": {
+              "id": "0x75d58753a748d6adc83b99bf4c6847b65b5583faddc2973e731cfde076501751"
+            },
+            "owner": {
+              "id": "0x70b8769b09af7447886620c20854c8b9119b5fee"
+            },
+            "registrant": null,
+            "wrappedOwner": null,
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            },
+            "resolvedAddress": null,
+            "createdAt": "1707219239",
+            "expiryDate": null,
+            "registration": null
+          },
+          {
+            "id": "0x42f80a8f3352e09275404334008ebfe7643271b1b9152ee73210428b32fe0c85",
+            "name": "mg.wg.ens.eth",
+            "labelName": "mg",
+            "labelhash": "0x874f24d79171d2516dbc8a34ae6d369ca58427053051af644856e8a683b097ce",
+            "parent": {
+              "id": "0x75d58753a748d6adc83b99bf4c6847b65b5583faddc2973e731cfde076501751"
+            },
+            "owner": {
+              "id": "0x70b8769b09af7447886620c20854c8b9119b5fee"
+            },
+            "registrant": null,
+            "wrappedOwner": null,
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            },
+            "resolvedAddress": null,
+            "createdAt": "1707217811",
+            "expiryDate": null,
+            "registration": null
+          },
+          {
+            "id": "0xc0de7bb07d49258d2a14b9d23694a171ba1f25c033d1ab77b36973a4d1fbfd96",
+            "name": "2.dnsname.ens.eth",
+            "labelName": "2",
+            "labelhash": "0xad7c5bef027816a800da1736444fb58a807ef4c9603b7848673f7e3a68eb14a5",
+            "parent": {
+              "id": "0x250712f87e86832e8bed775a563920aed01b926d9d21950e363a042af40ad2b5"
+            },
+            "owner": {
+              "id": "0xb6e040c9ecaae172a89bd561c5f73e1c48d28cd9"
+            },
+            "registrant": null,
+            "wrappedOwner": null,
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            },
+            "resolvedAddress": {
+              "id": "0x08769d484a7cd9c4a98e928d9e270221f3e8578c"
+            },
+            "createdAt": "1722431615",
+            "expiryDate": null,
+            "registration": null
+          }
+        ]
+      }
+    }
+  }
+}

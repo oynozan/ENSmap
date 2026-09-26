@@ -1,0 +1,34 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://ethereum-sepolia-rpc.publicnode.com/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 5,
+      "method": "eth_call",
+      "params": [
+        {
+          "data": "0xa1cbcbaf000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000110474696e7906676c6f6f6d790365746800000000000000000000000000000000",
+          "to": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee"
+        },
+        "latest"
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 5,
+      "result": "0x0000000000000000000000006abdb69f50877061d417ca4c80d2b4d571c641154188ffe6802912d17129ea1286ca672b0ebf73d93637399b368eec023ade3c5d0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+}

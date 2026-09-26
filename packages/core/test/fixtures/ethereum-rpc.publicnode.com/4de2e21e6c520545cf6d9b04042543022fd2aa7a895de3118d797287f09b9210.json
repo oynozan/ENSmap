@@ -1,0 +1,34 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://ethereum-rpc.publicnode.com/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 108,
+      "method": "eth_getBlockByNumber",
+      "params": [
+        "0xd55ba1",
+        false
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 108,
+      "error": {
+        "code": 4444,
+        "message": "pruned history unavailable: requested 13982625, earliest available 15500000"
+      }
+    }
+  }
+}

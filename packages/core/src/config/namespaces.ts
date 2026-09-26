@@ -116,6 +116,10 @@ function dedupe(values: string[]): string[] {
   return [...new Set(values.filter((value) => value !== ''))];
 }
 
+export function envSecrets(env: Env): string[] {
+  return dedupe(allEnvSecrets(env));
+}
+
 // ---- Name source ----------------------------------------------------------
 
 function overrideNameSource(
@@ -234,7 +238,7 @@ function resolveRpc(opts: {
 // ---- resolveNamespace -----------------------------------------------------
 
 export function resolveNamespace(id: string, env: Env): NamespaceConfig {
-  const secrets = dedupe(allEnvSecrets(env));
+  const secrets = envSecrets(env);
 
   if (id === 'mainnet') {
     return {

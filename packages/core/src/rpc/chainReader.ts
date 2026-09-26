@@ -1,10 +1,26 @@
 import pLimit from 'p-limit';
-import type { PublicClient } from 'viem';
+import {
+  BaseError,
+  BlockNotFoundError,
+  RpcRequestError,
+  type PublicClient,
+} from 'viem';
 
 import { findProviderError } from './client.ts';
 
 export interface ChainReader {
+  // Blocks the RPC cannot serve, such as pruned history, are left out
   blockTimestamps(blocks: readonly bigint[]): Promise<Map<bigint, Date>>;
+}
+
+function isMissingBlock(error: unknown): boolean {
+  return (
+    error instanceof BaseError &&
+    error.walk(
+      (cause) =>
+        cause instanceof RpcRequestError || cause instanceof BlockNotFoundError,
+    ) !== null
+  );
 }
 
 export function createChainReader(
@@ -13,12 +29,19 @@ export function createChainReader(
 ): ChainReader {
   const limit = pLimit(opts.concurrency);
 
-  async function timestampOf(blockNumber: bigint): Promise<Date> {
+  async function timestampOf(blockNumber: bigint): Promise<Date | null> {
     try {
       const block = await limit(() => client.getBlock({ blockNumber }));
       return new Date(Number(block.timestamp) * 1000);
     } catch (error) {
-      throw findProviderError(error) ?? error;
+      const providerError = findProviderError(error);
+      if (providerError !== null) {
+        throw providerError;
+      }
+      if (isMissingBlock(error)) {
+        return null;
+      }
+      throw error;
     }
   }
 
@@ -29,7 +52,11 @@ export function createChainReader(
           async (block) => [block, await timestampOf(block)] as const,
         ),
       );
-      return new Map(entries);
+      return new Map(
+        entries.flatMap(([block, time]) =>
+          time === null ? [] : [[block, time] as const],
+        ),
+      );
     },
   };
 }

@@ -1,0 +1,34 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://ethereum-rpc.publicnode.com/",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 9,
+      "method": "eth_call",
+      "params": [
+        {
+          "data": "0xa1cbcbaf000000000000000000000000000000000000000000000000000000000000002000000000000000000000000000000000000000000000000000000000000000140a636f6e74726f6c6c657203656e730365746800000000000000000000000000",
+          "to": "0xeeeeeeee14d718c2b47d9923deab1335e144eeee"
+        },
+        "latest"
+      ]
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "jsonrpc": "2.0",
+      "id": 9,
+      "result": "0x0000000000000000000000004976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41ceecb75ad42a60ea38b777bf842c14af3303219e2722a192ddeac19faa7fbb1c0000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
+}

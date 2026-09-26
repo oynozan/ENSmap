@@ -18,3 +18,10 @@ export type {
   TreeNode,
 } from './types.ts';
 export { NameNotFoundError, walkTree, type WalkOptions } from './walk.ts';
+export {
+  buildNameMap,
+  type BuildNameMapParams,
+  type NameMapResult,
+  type NamespaceDeps,
+} from './buildNameMap.ts';
+export { NameMapJson, toNameMapJson } from './json.ts';

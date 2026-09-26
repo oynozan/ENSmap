@@ -1,0 +1,492 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query ResolverChanges($ids: [String!]!, $afterSet: ID!, $afterCleared: ID!) {\n  set: newResolvers(\n    first: 1000\n    orderBy: id\n    where: {\n      and: [\n        { domain_in: $ids }\n        { resolver_not: \"0x0000000000000000000000000000000000000000\" }\n        { id_gt: $afterSet }\n      ]\n    }\n  ) {\n    id\n    blockNumber\n    domain { id }\n    resolver { address }\n  }\n  cleared: newResolvers(\n    first: 1000\n    orderBy: id\n    where: {\n      and: [\n        { domain_in: $ids }\n        { resolver: \"0x0000000000000000000000000000000000000000\" }\n        { id_gt: $afterCleared }\n      ]\n    }\n  ) {\n    id\n    blockNumber\n    domain { id }\n  }\n}",
+      "variables": {
+        "ids": [
+          "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+          "0x9e5c7a2f2ab8b565c6d2c4851a73decb53d1f6a23c97a2b5b66f21d8ace1bbd5",
+          "0xc867d2bd24b8a88c7d5d416dfab28fec6858b5a86f3a1c94faeab450c34023f6",
+          "0xceecb75ad42a60ea38b777bf842c14af3303219e2722a192ddeac19faa7fbb1c",
+          "0xe55e79685b24c7b16542f3c613a8899986ace5e2e08b3c9444ce70d81d49bcd2",
+          "0x250712f87e86832e8bed775a563920aed01b926d9d21950e363a042af40ad2b5",
+          "0x3124e45545d17d9fda8e24a7a09f111a0802ea26ce6b1f14c75c832442deb65d",
+          "0x287e74fe5b4463a7e8b8d4c4cccae51a8ab397df053bc829c6a4e26963c7ce2b",
+          "0x08625bbdd59ae52e6a0e3f8f2bd6213e60ad35276510c83d117c7a2a68bc65c0",
+          "0x761031277d539800dbfd27cfd8e7d0b37eef7dc3c3e2748363dd6f0378fc5bde",
+          "0xb392bc6cd948e44f06e6814b15210d1e8a5cab275050dfcf03d31bd2c657de57",
+          "0x64d16903417c5a3048eb166f7627149fd87a4951641caa06839be1356ba78053",
+          "0x5b3b6afacf396089904ab1850a0c75b0b7ccc116d2b1afd7c1be7a0b442653ad",
+          "0x23e6467f045d0a8a6bb77dfcb215bfbd727496b4209d96a9aecd0da0b2e00868",
+          "0xc80bb329ad070734e9c503151c00f639f8a6acae8c9e76c730d272547417ce2f",
+          "0x861a0f4aa5f9e828249d23933af092f54a594b5db09d8912ca92152b70730b5a",
+          "0x75d58753a748d6adc83b99bf4c6847b65b5583faddc2973e731cfde076501751",
+          "0x22f4337bba67e073a1dcc4e388cc8dce827b4f58331532b1b1a1a5607ec21ff7",
+          "0xc0de7bb07d49258d2a14b9d23694a171ba1f25c033d1ab77b36973a4d1fbfd96",
+          "0xc0bf975180688d1c9094d05bec726ab3512cfe6ba9f36d18d72b57ce390d111d",
+          "0x653e93866ac4213a6a02648bfe807ca0b10f47a33749596485083bce27f219ec",
+          "0x00a8ee2bfbe8ffd4096c22d560c0cf9742857951a202ddb16a703c5918d53e5c",
+          "0x8d0f1b1b56e39e5b08ab43ecb5439cf9718f31a93b99f825f3bc42cd0522d2e7",
+          "0x9d793267e62d1d5d6401b886182fca5daa786b0e6bf9f6f5ac0699352d701f83",
+          "0xdb8115c4732ea086de94b6d955db474c9ecd09ff2d15ebdde8869a88ff1cbb87",
+          "0x2a00c3219138ceb24ad0352cfa21d731dfa0b902000077f24cf8ec9e65f14eb0",
+          "0xf5a3fcdb90a34121820dde90d48b00913b932c718ecb06651cdb9ee96139f659",
+          "0xe782fe53dd6390ea605c4d1085a2df23a5b2adb745af76457f0fecf8004a0675",
+          "0x8afc43e60f9a499e49b9f9a707e081badf81ccc81dd826c238ff120f73270181"
+        ],
+        "afterSet": "",
+        "afterCleared": ""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "set": [
+          {
+            "id": "11916522-220",
+            "blockNumber": 11916522,
+            "domain": {
+              "id": "0x761031277d539800dbfd27cfd8e7d0b37eef7dc3c3e2748363dd6f0378fc5bde"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "11916538-118",
+            "blockNumber": 11916538,
+            "domain": {
+              "id": "0xc867d2bd24b8a88c7d5d416dfab28fec6858b5a86f3a1c94faeab450c34023f6"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "13104590-120",
+            "blockNumber": 13104590,
+            "domain": {
+              "id": "0x3124e45545d17d9fda8e24a7a09f111a0802ea26ce6b1f14c75c832442deb65d"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "13104595-368",
+            "blockNumber": 13104595,
+            "domain": {
+              "id": "0x287e74fe5b4463a7e8b8d4c4cccae51a8ab397df053bc829c6a4e26963c7ce2b"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "13982608-61",
+            "blockNumber": 13982608,
+            "domain": {
+              "id": "0xe55e79685b24c7b16542f3c613a8899986ace5e2e08b3c9444ce70d81d49bcd2"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "17188439-340",
+            "blockNumber": 17188439,
+            "domain": {
+              "id": "0x22f4337bba67e073a1dcc4e388cc8dce827b4f58331532b1b1a1a5607ec21ff7"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "17188446-303",
+            "blockNumber": 17188446,
+            "domain": {
+              "id": "0xc80bb329ad070734e9c503151c00f639f8a6acae8c9e76c730d272547417ce2f"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19111761-122",
+            "blockNumber": 19111761,
+            "domain": {
+              "id": "0x250712f87e86832e8bed775a563920aed01b926d9d21950e363a042af40ad2b5"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19112665-279",
+            "blockNumber": 19112665,
+            "domain": {
+              "id": "0x75d58753a748d6adc83b99bf4c6847b65b5583faddc2973e731cfde076501751"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168871-438",
+            "blockNumber": 19168871,
+            "domain": {
+              "id": "0xc0bf975180688d1c9094d05bec726ab3512cfe6ba9f36d18d72b57ce390d111d"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168875-428",
+            "blockNumber": 19168875,
+            "domain": {
+              "id": "0x653e93866ac4213a6a02648bfe807ca0b10f47a33749596485083bce27f219ec"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168888-538",
+            "blockNumber": 19168888,
+            "domain": {
+              "id": "0x00a8ee2bfbe8ffd4096c22d560c0cf9742857951a202ddb16a703c5918d53e5c"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168888-540",
+            "blockNumber": 19168888,
+            "domain": {
+              "id": "0x8d0f1b1b56e39e5b08ab43ecb5439cf9718f31a93b99f825f3bc42cd0522d2e7"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168926-310",
+            "blockNumber": 19168926,
+            "domain": {
+              "id": "0x9d793267e62d1d5d6401b886182fca5daa786b0e6bf9f6f5ac0699352d701f83"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168938-261",
+            "blockNumber": 19168938,
+            "domain": {
+              "id": "0x8afc43e60f9a499e49b9f9a707e081badf81ccc81dd826c238ff120f73270181"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168942-244",
+            "blockNumber": 19168942,
+            "domain": {
+              "id": "0x2a00c3219138ceb24ad0352cfa21d731dfa0b902000077f24cf8ec9e65f14eb0"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "19168943-250",
+            "blockNumber": 19168943,
+            "domain": {
+              "id": "0xf5a3fcdb90a34121820dde90d48b00913b932c718ecb06651cdb9ee96139f659"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "20071844-289",
+            "blockNumber": 20071844,
+            "domain": {
+              "id": "0xe782fe53dd6390ea605c4d1085a2df23a5b2adb745af76457f0fecf8004a0675"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "20426759-333",
+            "blockNumber": 20426759,
+            "domain": {
+              "id": "0xc0de7bb07d49258d2a14b9d23694a171ba1f25c033d1ab77b36973a4d1fbfd96"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "22287469-308",
+            "blockNumber": 22287469,
+            "domain": {
+              "id": "0x9e5c7a2f2ab8b565c6d2c4851a73decb53d1f6a23c97a2b5b66f21d8ace1bbd5"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "23169856-533",
+            "blockNumber": 23169856,
+            "domain": {
+              "id": "0xdb8115c4732ea086de94b6d955db474c9ecd09ff2d15ebdde8869a88ff1cbb87"
+            },
+            "resolver": {
+              "address": "0x231b0ee14048e9dccd1d247744d114a4eb5e8e63"
+            }
+          },
+          {
+            "id": "23996443-398",
+            "blockNumber": 23996443,
+            "domain": {
+              "id": "0x08625bbdd59ae52e6a0e3f8f2bd6213e60ad35276510c83d117c7a2a68bc65c0"
+            },
+            "resolver": {
+              "address": "0xf29100983e058b709f3d539b0c765937b804ac15"
+            }
+          },
+          {
+            "id": "8775836-114",
+            "blockNumber": 8775836,
+            "domain": {
+              "id": "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "8806781-190",
+            "blockNumber": 8806781,
+            "domain": {
+              "id": "0x23e6467f045d0a8a6bb77dfcb215bfbd727496b4209d96a9aecd0da0b2e00868"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "8806784-184",
+            "blockNumber": 8806784,
+            "domain": {
+              "id": "0x5b3b6afacf396089904ab1850a0c75b0b7ccc116d2b1afd7c1be7a0b442653ad"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "8806784-185",
+            "blockNumber": 8806784,
+            "domain": {
+              "id": "0x64d16903417c5a3048eb166f7627149fd87a4951641caa06839be1356ba78053"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "8806784-186",
+            "blockNumber": 8806784,
+            "domain": {
+              "id": "0x861a0f4aa5f9e828249d23933af092f54a594b5db09d8912ca92152b70730b5a"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "8806784-187",
+            "blockNumber": 8806784,
+            "domain": {
+              "id": "0xb392bc6cd948e44f06e6814b15210d1e8a5cab275050dfcf03d31bd2c657de57"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "8806784-188",
+            "blockNumber": 8806784,
+            "domain": {
+              "id": "0xceecb75ad42a60ea38b777bf842c14af3303219e2722a192ddeac19faa7fbb1c"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9411665-102",
+            "blockNumber": 9411665,
+            "domain": {
+              "id": "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568521-24",
+            "blockNumber": 9568521,
+            "domain": {
+              "id": "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "9568709-173",
+            "blockNumber": 9568709,
+            "domain": {
+              "id": "0x23e6467f045d0a8a6bb77dfcb215bfbd727496b4209d96a9aecd0da0b2e00868"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568709-175",
+            "blockNumber": 9568709,
+            "domain": {
+              "id": "0x5b3b6afacf396089904ab1850a0c75b0b7ccc116d2b1afd7c1be7a0b442653ad"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568709-177",
+            "blockNumber": 9568709,
+            "domain": {
+              "id": "0x64d16903417c5a3048eb166f7627149fd87a4951641caa06839be1356ba78053"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568709-179",
+            "blockNumber": 9568709,
+            "domain": {
+              "id": "0x861a0f4aa5f9e828249d23933af092f54a594b5db09d8912ca92152b70730b5a"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568711-146",
+            "blockNumber": 9568711,
+            "domain": {
+              "id": "0xb392bc6cd948e44f06e6814b15210d1e8a5cab275050dfcf03d31bd2c657de57"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568711-148",
+            "blockNumber": 9568711,
+            "domain": {
+              "id": "0xceecb75ad42a60ea38b777bf842c14af3303219e2722a192ddeac19faa7fbb1c"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568804-132",
+            "blockNumber": 9568804,
+            "domain": {
+              "id": "0x23e6467f045d0a8a6bb77dfcb215bfbd727496b4209d96a9aecd0da0b2e00868"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "9568808-187",
+            "blockNumber": 9568808,
+            "domain": {
+              "id": "0x5b3b6afacf396089904ab1850a0c75b0b7ccc116d2b1afd7c1be7a0b442653ad"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "9568809-65",
+            "blockNumber": 9568809,
+            "domain": {
+              "id": "0x64d16903417c5a3048eb166f7627149fd87a4951641caa06839be1356ba78053"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "9568813-159",
+            "blockNumber": 9568813,
+            "domain": {
+              "id": "0x861a0f4aa5f9e828249d23933af092f54a594b5db09d8912ca92152b70730b5a"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "9568822-222",
+            "blockNumber": 9568822,
+            "domain": {
+              "id": "0xb392bc6cd948e44f06e6814b15210d1e8a5cab275050dfcf03d31bd2c657de57"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          },
+          {
+            "id": "9568829-90",
+            "blockNumber": 9568829,
+            "domain": {
+              "id": "0xceecb75ad42a60ea38b777bf842c14af3303219e2722a192ddeac19faa7fbb1c"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          }
+        ],
+        "cleared": []
+      }
+    }
+  }
+}

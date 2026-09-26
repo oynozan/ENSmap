@@ -2,7 +2,7 @@ import process from 'node:process';
 
 import { loadDotEnv } from '@ensmap/core/config';
 
-import { runCli, type CliIO } from './program.ts';
+import { runMain, type CliIO } from './program.ts';
 
 const consoleIO: CliIO = {
   stdout: (s: string) => {
@@ -14,4 +14,4 @@ const consoleIO: CliIO = {
 };
 
 loadDotEnv();
-process.exitCode = await runCli(process.argv.slice(2), consoleIO);
+process.exitCode = await runMain(process.argv.slice(2), consoleIO);

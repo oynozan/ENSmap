@@ -1,0 +1,41 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query Children($parents: [String!]!, $after: ID!) {\n  domains(\n    first: 1000\n    orderBy: id\n    orderDirection: asc\n    where: {\n      and: [\n        { parent_in: $parents }\n        { id_gt: $after }\n        { or: [{ owner_not: \"0x0000000000000000000000000000000000000000\" }, { resolver_not: null }] }\n      ]\n    }\n  ) {\n    id name labelName labelhash parent { id } owner { id }\n    registrant { id } wrappedOwner { id } resolver { address }\n    resolvedAddress { id } createdAt expiryDate\n    registration { registrationDate expiryDate }\n  }\n}",
+      "variables": {
+        "parents": [
+          "0xf76954856df31155d6f8283a91ed2e93758194d568b37fb8e390dcc83bcba4c7",
+          "0xc0bf975180688d1c9094d05bec726ab3512cfe6ba9f36d18d72b57ce390d111d",
+          "0x653e93866ac4213a6a02648bfe807ca0b10f47a33749596485083bce27f219ec",
+          "0xe782fe53dd6390ea605c4d1085a2df23a5b2adb745af76457f0fecf8004a0675",
+          "0x00a8ee2bfbe8ffd4096c22d560c0cf9742857951a202ddb16a703c5918d53e5c",
+          "0x2a00c3219138ceb24ad0352cfa21d731dfa0b902000077f24cf8ec9e65f14eb0",
+          "0x8afc43e60f9a499e49b9f9a707e081badf81ccc81dd826c238ff120f73270181",
+          "0x8d0f1b1b56e39e5b08ab43ecb5439cf9718f31a93b99f825f3bc42cd0522d2e7",
+          "0x9d793267e62d1d5d6401b886182fca5daa786b0e6bf9f6f5ac0699352d701f83",
+          "0xdb8115c4732ea086de94b6d955db474c9ecd09ff2d15ebdde8869a88ff1cbb87",
+          "0xf5a3fcdb90a34121820dde90d48b00913b932c718ecb06651cdb9ee96139f659"
+        ],
+        "after": ""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "domains": []
+      }
+    }
+  }
+}

@@ -1,5 +1,10 @@
 import pLimit from 'p-limit';
-import { UnknownRpcError, type PublicClient } from 'viem';
+import {
+  BlockNotFoundError,
+  RpcRequestError,
+  UnknownRpcError,
+  type PublicClient,
+} from 'viem';
 import { describe, expect, it } from 'vitest';
 
 import { loadEnv, resolveNamespace } from '../config/index.ts';
@@ -31,6 +36,48 @@ describe('createChainReader', () => {
     await expect(
       createChainReader(client, { concurrency: 1 }).blockTimestamps([1n]),
     ).rejects.toBe(providerError);
+  });
+
+  it('leaves out blocks the RPC answers with an error or does not have', async () => {
+    const client = {
+      getBlock: ({ blockNumber }: { blockNumber: bigint }) => {
+        if (blockNumber === 1n) {
+          // publicnode's answer for a block before its pruning horizon
+          return Promise.reject(
+            new RpcRequestError({
+              body: {},
+              error: {
+                code: 4444,
+                message: 'pruned history unavailable',
+              },
+              url: 'https://rpc.example',
+            }),
+          );
+        }
+        if (blockNumber === 2n) {
+          return Promise.reject(new BlockNotFoundError({ blockNumber }));
+        }
+        return Promise.resolve({ timestamp: 1_700_000_000n });
+      },
+    } as unknown as PublicClient;
+
+    const times = await createChainReader(client, {
+      concurrency: 1,
+    }).blockTimestamps([1n, 2n, 3n]);
+
+    expect(times).toEqual(
+      new Map([[3n, new Date('2023-11-14T22:13:20.000Z')]]),
+    );
+  });
+
+  it('rethrows any other error', async () => {
+    const client = {
+      getBlock: () => Promise.reject(new Error('boom')),
+    } as unknown as PublicClient;
+
+    await expect(
+      createChainReader(client, { concurrency: 1 }).blockTimestamps([1n]),
+    ).rejects.toThrow('boom');
   });
 
   it(
