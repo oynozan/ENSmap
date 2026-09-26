@@ -69,7 +69,7 @@ const CCIP_LIMITS = limitsWith({ concurrency: 2, minIntervalMs: 0 });
 // normalized Request.url in fixtures, so a query-bearing env URL must
 // contribute both the raw and the URL-API-normalized path+query.
 
-function urlSecrets(raw: string | undefined): string[] {
+export function urlSecrets(raw: string | undefined): string[] {
   if (raw === undefined) {
     return [];
   }
@@ -88,7 +88,13 @@ function urlSecrets(raw: string | undefined): string[] {
   if (url.pathname === '/' && url.search === '') {
     return [];
   }
-  return [raw.slice(url.origin.length), `${url.pathname}${url.search}`];
+  return [rawPathAndQuery(raw), `${url.pathname}${url.search}`];
+}
+
+// WHATWG URL ends the authority at the first / ? # or \ after the slashes
+function rawPathAndQuery(raw: string): string {
+  const authority = /^[^:]*:[/\\]*[^/?#\\]*/.exec(raw);
+  return authority === null ? raw : raw.slice(authority[0].length);
 }
 
 // Every secret-bearing env value, regardless of whether this particular

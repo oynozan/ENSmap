@@ -6,11 +6,17 @@ import { z } from 'zod';
 const ensSourceKind = z.enum(['ens-subgraph', 'ens-dev-graphql']);
 const fixturesMode = z.enum(['record', 'replay', 'off']);
 
+// fetch rejects userinfo, and urlSecrets only redacts path+query
+const endpointUrl = z.httpUrl().refine((value) => {
+  const url = URL.parse(value);
+  return url !== null && url.username === '' && url.password === '';
+});
+
 export const EnvSchema = z.object({
   // Spec ground rules (section 1): secrets that never reach the browser.
   ALCHEMY_API_KEY: z.string().optional(),
-  ENSNODE_URL_MAINNET: z.httpUrl().optional(),
-  ENSNODE_URL_SEPOLIA_V2: z.httpUrl().optional(),
+  ENSNODE_URL_MAINNET: endpointUrl.optional(),
+  ENSNODE_URL_SEPOLIA_V2: endpointUrl.optional(),
   DUNE_API_KEY: z.string().optional(),
   BITQUERY_API_KEY: z.string().optional(),
   // Not a URL type: DATABASE_URL also accepts pglite:<path> and memory:, and
@@ -21,10 +27,10 @@ export const EnvSchema = z.object({
   GRAPH_API_KEY: z.string().optional(),
   ENS_SOURCE_KIND_MAINNET: ensSourceKind.optional(),
   ENS_SOURCE_KIND_SEPOLIA_V2: ensSourceKind.optional(),
-  ENS_SOURCE_URL_MAINNET: z.httpUrl().optional(),
-  ENS_SOURCE_URL_SEPOLIA_V2: z.httpUrl().optional(),
-  RPC_URL_1: z.httpUrl().optional(),
-  RPC_URL_11155111: z.httpUrl().optional(),
+  ENS_SOURCE_URL_MAINNET: endpointUrl.optional(),
+  ENS_SOURCE_URL_SEPOLIA_V2: endpointUrl.optional(),
+  RPC_URL_1: endpointUrl.optional(),
+  RPC_URL_11155111: endpointUrl.optional(),
 
   ENSMAP_FIXTURES: fixturesMode.optional(),
 });

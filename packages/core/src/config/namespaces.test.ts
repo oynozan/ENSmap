@@ -2,7 +2,27 @@ import { describe, expect, it } from 'vitest';
 
 import { redact } from '../http/index.ts';
 import { loadEnv } from './env.ts';
-import { coinTypeFor, resolveNamespace } from './namespaces.ts';
+import { coinTypeFor, resolveNamespace, urlSecrets } from './namespaces.ts';
+
+describe('urlSecrets', () => {
+  it('slices the raw path+query after userinfo instead of at the origin length', () => {
+    const raw = 'https://alice:s3cretPW@rpc.example/v2/key123';
+
+    expect(new Set(urlSecrets(raw))).toEqual(new Set(['/v2/key123']));
+  });
+
+  it('is not fooled by a userinfo that repeats the host', () => {
+    const raw = 'https://rpc.example:pw@rpc.example/v2/key123';
+
+    expect(new Set(urlSecrets(raw))).toEqual(new Set(['/v2/key123']));
+  });
+
+  it('keeps the raw path+query when the host casing or default port differs', () => {
+    const raw = 'https://RPC.Example:443/v2/key123?k=1';
+
+    expect(urlSecrets(raw)).toEqual(['/v2/key123?k=1', '/v2/key123?k=1']);
+  });
+});
 
 describe('resolveNamespace', () => {
   describe('mainnet', () => {

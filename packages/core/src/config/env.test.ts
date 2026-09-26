@@ -77,6 +77,29 @@ describe('loadEnv', () => {
     expect(loadEnv({ DATABASE_URL: url }).DATABASE_URL).toBe(url);
   });
 
+  it('rejects a credentialed RPC_URL_1 without echoing the userinfo', () => {
+    const load = () =>
+      loadEnv({ RPC_URL_1: 'https://alice:s3cretPW@rpc.example/v2/key123' });
+
+    expect(load).toThrow(/RPC_URL_1/);
+    expect(load).not.toThrow(/alice/);
+    expect(load).not.toThrow(/s3cretPW/);
+  });
+
+  it.each([
+    'RPC_URL_1',
+    'RPC_URL_11155111',
+    'ENS_SOURCE_URL_MAINNET',
+    'ENS_SOURCE_URL_SEPOLIA_V2',
+    'ENSNODE_URL_MAINNET',
+    'ENSNODE_URL_SEPOLIA_V2',
+  ])('rejects a username-only or password-only %s', (key) => {
+    expect(() => loadEnv({ [key]: 'https://alice@host.example/p' })).toThrow(
+      key,
+    );
+    expect(() => loadEnv({ [key]: 'https://:pw@host.example/p' })).toThrow(key);
+  });
+
   it('never includes the offending value in a rejection message', () => {
     expect(() => loadEnv({ RPC_URL_1: 'javascript:alert(1)' })).not.toThrow(
       /javascript:alert/,
