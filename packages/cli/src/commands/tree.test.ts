@@ -115,7 +115,11 @@ describe(
         (line) => nodeName(line) === 'tiny.test.gloomy.eth',
       );
       expect(tiny).toHaveLength(1);
-      expect(tiny[0]).toContain('also under: ');
+      // Its own registry lists it again, the recording's only self edge
+      expect(tiny[0]).toContain(
+        ' · also under: itself (its registry contains it)',
+      );
+      expect(tiny[0]).not.toContain('also under: tiny.test.gloomy.eth');
       expect(stderr).toContain('API calls: ');
     });
 
@@ -320,7 +324,7 @@ function fakeMap(): NameMapResult {
     ['r', node(record('r', 'r.eth', { owner: W }), 'r.eth', [], 0)],
     ['h', node(record('h', '❤.r.eth'), '❤.r.eth', ['r'], 1)],
     ['k', node(record('k', 'k.v.eth'), 'k.r.eth', ['r'], 1)],
-    ['x', node(record('x', 'x.r.eth'), 'x.r.eth', ['r', 'h'], 1)],
+    ['x', node(record('x', 'x.r.eth'), 'x.r.eth', ['r', 'h', 'x'], 1)],
     [
       'e',
       node(record('e', `${ENCODED}.❤.r.eth`), `${ENCODED}.❤.r.eth`, ['h'], 2),
@@ -379,7 +383,7 @@ describe('formatTree', () => {
     expect(formatTree(fakeMap())).toMatchInlineSnapshot(`
       "r.eth · 0x1234…abcd · verified · home · registry shared with: v.eth
         k.r.eth · no wallet · canonical: k.v.eth · tags: alias-path
-        x.r.eth · 0xfeed…beef · verified · home · also under: ❤️.r.eth · tags: expired
+        x.r.eth · 0xfeed…beef · verified · home · also under: ❤️.r.eth, itself (its registry contains it) · tags: expired
         ❤️.r.eth · 0x1234…abcd · unverified · same wallet as r.eth
           [abababababababababababababababababababababababababababababababab].❤️.r.eth · no wallet · tags: unresolvable
       5 names (indexed: ≥9) · truncated: yes · wallets: 2

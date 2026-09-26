@@ -53,13 +53,16 @@ function nodeLine(
   // A node is printed under its first parent, the root under none
   const printedUnder = id === tree.rootId ? undefined : node.parentIds[0];
   const otherParents = [...new Set(node.parentIds)]
-    .filter((parentId) => parentId !== printedUnder)
+    .filter((parentId) => parentId !== printedUnder && parentId !== id)
     .flatMap((parentId) => {
       const parent = tree.nodes.get(parentId);
-      return parent === undefined ? [] : [parent.name];
+      return parent === undefined ? [] : [beautifyName(parent.name)];
     });
+  if (node.parentIds.includes(id)) {
+    otherParents.push('itself (its registry contains it)');
+  }
   if (otherParents.length > 0) {
-    parts.push(`also under: ${names(otherParents)}`);
+    parts.push(`also under: ${otherParents.join(', ')}`);
   }
 
   const tags = r.tags.get(id) ?? [];
