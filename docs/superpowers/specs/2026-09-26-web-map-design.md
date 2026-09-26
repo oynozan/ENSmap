@@ -50,7 +50,7 @@ DetailsPanel · StatusLine · NodeList (keyboard)
 
 ## 1. Graph schema — `packages/core/src/schema/index.ts` (early slice of Phase 4)
 
-The schema is written in zod, is browser-safe, and is versioned. It carries the spec §5.9 shape plus three optional node fields (◆). Phase 4 extends it rather than replacing it.
+The schema is written in zod, is browser-safe, and is versioned. It carries the spec §5.9 shape plus four optional node fields (◆). Phase 4 extends it rather than replacing it.
 
 - **`GRAPH_VERSION = 1`**
 - **`NodeKind`:** `name | subname | counterparty | deposit | cexHub | dexHub | timeNode | collapsed`
@@ -62,7 +62,7 @@ The schema is written in zod, is browser-safe, and is versioned. It carries the 
 ```
 { id, kind, label, address?, names?, homeName?, chainId?, verified?, tags[],
   labelSource?, confidence?, size: { metric, value }, clusterId?, collapsedCount?,
-  ◆ owner?, ◆ canonical?, ◆ sharedWith? }
+  ◆ verifiedBy?, ◆ owner?, ◆ canonical?, ◆ sharedWith? }
 ```
 
 - `id` is the source domain id.
@@ -73,6 +73,7 @@ The schema is written in zod, is browser-safe, and is versioned. It carries the 
 - ◆ `owner` is the name's owner address.
 - ◆ `canonical` is the beautified canonical name, set only for `alias-path` nodes.
 - ◆ `sharedWith` holds the beautified names outside the tree that share this node's registry.
+- ◆ `verifiedBy` is `primary-name` or `owner`, set only on verified bindings.
 
 **`GraphEdge`:**
 
@@ -156,11 +157,11 @@ Only the search bar, panel, status line and node list are React. The map is plai
 | `map/layout.worker.ts`  | The d3-force simulation. Posts `Float32Array` positions each tick, as a transfer. Under reduced motion it runs to rest first and posts once.            |
 | `map/workerLayout.ts`   | Implements `LayoutEngine` over the worker.                                                                                                              |
 | `map/canvasRenderer.ts` | Implements `MapRenderer`. DPR-aware canvas 2D; redraws on a rAF only when something changed.                                                            |
-| `map/hitTest.ts`        | Pure. Finds the bubble under the pointer with a d3-quadtree.                                                                                            |
+| `map/hitTest.ts`        | Pure. Finds the bubble under the pointer with a linear scan, which is enough at 1,000 names.                                                            |
 | `map/MapView.tsx`       | Owns the canvas, d3-zoom (drag to pan, wheel or pinch to zoom), hover, selection and same-wallet highlight.                                             |
 | `ui/SearchBar.tsx`      | The bordered pill with the circular button inside.                                                                                                      |
 | `ui/DetailsPanel.tsx`   | The slim right-hand panel; a bottom sheet under 640 px.                                                                                                 |
-| `ui/StatusLine.tsx`     | Bottom-left line in the form `6 names · indexed 6 · sepolia-v2 · 1 warning`. Hovering shows the warnings.                                               |
+| `ui/StatusLine.tsx`     | Bottom-left line in the form `6 names · indexed 6 · sepolia-v2 · 1 warning`. An expandable list, reachable by keyboard, shows the warnings.             |
 | `ui/NodeList.tsx`       | Keyboard access. A list of buttons, one per node, visible only while focused. Focusing one draws a focus ring on its bubble, and Enter opens its panel. |
 | `theme.css`             | Colour tokens, font faces, focus styles and reduced-motion rules.                                                                                       |
 
@@ -228,6 +229,8 @@ Only the search bar, panel, status line and node list are React. The map is plai
 
 **Errors.** One `coral` line under the bar, in Manrope 200:
 
+- a lookup that takes longer than 90 s: "The lookup took too long. Try again.";
+
 - the API message, such as "Name not found on the Sepolia ENSv2 Beta";
 - for an invalid name, the first per-label reason.
 
@@ -276,7 +279,7 @@ Only the search bar, panel, status line and node list are React. The map is plai
 
 11. The web is built before Phases 2–4, by user decision. Until Phase 4, the map shows names and wallets only.
 12. The web shows the `sepolia-v2` namespace only and has no network control.
-13. The graph schema and builder land early as a slice of Phase 4. Nodes gain the optional fields `owner`, `canonical` and `sharedWith`, and `meta` gains `warnings`.
+13. The graph schema and builder land early as a slice of Phase 4. Nodes gain the optional fields `verifiedBy`, `owner`, `canonical` and `sharedWith`, and `meta` gains `warnings`.
 14. Node kinds: the root and wallet home names are `name`; the others are `subname`.
 15. Until bonds exist, the default size metric is `subnamesHeld` (descendant count).
 16. There is no 250-name display cap and no "+N more" collapse yet. Everything fetched is shown, up to the 1,000-name fetch cap.
