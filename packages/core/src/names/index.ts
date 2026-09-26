@@ -6,6 +6,7 @@ export {
   type DeriveBindingsInput,
   type EventPosition,
 } from './bindings.ts';
+export { assignHomeNames, type WalletGroup } from './homes.ts';
 export type {
   Address,
   ChildrenPage,
