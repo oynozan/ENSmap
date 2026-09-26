@@ -110,6 +110,39 @@ describe('createFixtureFetch', () => {
     expect(() => JSON.parse(saved) as unknown).not.toThrow();
   });
 
+  it('saves only the response headers replay uses, not echoed client details', async () => {
+    const record = createFixtureFetch({
+      dir,
+      mode: 'record',
+      secrets: [],
+      inner: respondWith('{"answer":42}', {
+        status: 429,
+        headers: {
+          'content-type': 'application/json',
+          'retry-after': '2',
+          'cf-connecting-ip': '203.0.113.7',
+          'set-cookie': 'session=abc',
+          'user-agent': 'node',
+        },
+      }),
+    });
+    await record('https://api.example/graphql', { method: 'POST', body: '{}' });
+
+    const [file = ''] = savedFiles();
+    const saved = JSON.parse(readFileSync(file, 'utf8')) as {
+      response: { headers: Record<string, string> };
+    };
+    expect(saved.response.headers).toEqual({
+      'content-type': 'application/json',
+      'retry-after': '2',
+    });
+    const replayed = await replayer()('https://api.example/graphql', {
+      method: 'POST',
+      body: '{}',
+    });
+    expect(replayed.headers.get('retry-after')).toBe('2');
+  });
+
   it('replays a fixture recorded under a different secret value', async () => {
     const record = createFixtureFetch({
       dir,

@@ -1,0 +1,116 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query AddrEvents($resolverIds: [String!]!) {\n  addrChangeds(\n    where: { resolver_in: $resolverIds }\n    orderBy: blockNumber\n    orderDirection: desc\n    first: 1000\n  ) {\n    id\n    blockNumber\n    resolver { id address }\n    addr { id }\n  }\n  multicoinAddrChangeds(\n    where: { coinType: 60, resolver_in: $resolverIds }\n    orderBy: blockNumber\n    orderDirection: desc\n    first: 1000\n  ) {\n    id\n    blockNumber\n    resolver { id address }\n    addr\n  }\n  versionChangeds(\n    where: { resolver_in: $resolverIds }\n    orderBy: blockNumber\n    orderDirection: desc\n    first: 1000\n  ) {\n    id\n    blockNumber\n    resolver { id address }\n  }\n}",
+      "variables": {
+        "resolverIds": [
+          "0xbd5f5ec7ed5f19b53726344540296c02584a5237-0x3d8946310840d3d42c6323916d1b53e0481f9623537c3a363bb04345c0be26bc",
+          "0x226159d592e2b063810a10ebf6dcbada94ed68b8-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+          "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df"
+        ]
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "addrChangeds": [
+          {
+            "id": "14091662-298",
+            "blockNumber": 14091662,
+            "resolver": {
+              "id": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            },
+            "addr": {
+              "id": "0xfe89cc7abb2c4183683ab71653c4cdc9b02d44b7"
+            }
+          },
+          {
+            "id": "9568521-23",
+            "blockNumber": 9568521,
+            "resolver": {
+              "id": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            },
+            "addr": {
+              "id": "0xb6e040c9ecaae172a89bd561c5f73e1c48d28cd9"
+            }
+          },
+          {
+            "id": "9568521-20",
+            "blockNumber": 9568521,
+            "resolver": {
+              "id": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            },
+            "addr": {
+              "id": "0xb6e040c9ecaae172a89bd561c5f73e1c48d28cd9"
+            }
+          },
+          {
+            "id": "8775844-95",
+            "blockNumber": 8775844,
+            "resolver": {
+              "id": "0x226159d592e2b063810a10ebf6dcbada94ed68b8-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            },
+            "addr": {
+              "id": "0xb6e040c9ecaae172a89bd561c5f73e1c48d28cd9"
+            }
+          }
+        ],
+        "multicoinAddrChangeds": [
+          {
+            "id": "14091662-297",
+            "blockNumber": 14091662,
+            "resolver": {
+              "id": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            },
+            "addr": "0xfe89cc7abb2c4183683ab71653c4cdc9b02d44b7"
+          },
+          {
+            "id": "9568521-22",
+            "blockNumber": 9568521,
+            "resolver": {
+              "id": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            },
+            "addr": "0xb6e040c9ecaae172a89bd561c5f73e1c48d28cd9"
+          },
+          {
+            "id": "9568521-19",
+            "blockNumber": 9568521,
+            "resolver": {
+              "id": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            },
+            "addr": "0xb6e040c9ecaae172a89bd561c5f73e1c48d28cd9"
+          },
+          {
+            "id": "8775844-94",
+            "blockNumber": 8775844,
+            "resolver": {
+              "id": "0x226159d592e2b063810a10ebf6dcbada94ed68b8-0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            },
+            "addr": "0xb6e040c9ecaae172a89bd561c5f73e1c48d28cd9"
+          }
+        ],
+        "versionChangeds": []
+      }
+    }
+  }
+}

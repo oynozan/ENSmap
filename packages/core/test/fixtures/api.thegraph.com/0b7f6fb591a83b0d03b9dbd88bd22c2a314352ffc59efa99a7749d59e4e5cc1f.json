@@ -1,0 +1,83 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+    "headers": {
+      "accept": "application/json",
+      "content-type": "application/json"
+    },
+    "body": {
+      "query": "query ResolverChanges($ids: [String!]!, $afterSet: ID!, $afterCleared: ID!) {\n  set: newResolvers(\n    first: 1000\n    orderBy: id\n    where: {\n      and: [\n        { domain_in: $ids }\n        { resolver_not: \"0x0000000000000000000000000000000000000000\" }\n        { id_gt: $afterSet }\n      ]\n    }\n  ) {\n    id\n    blockNumber\n    domain { id }\n    resolver { address }\n  }\n  cleared: newResolvers(\n    first: 1000\n    orderBy: id\n    where: {\n      and: [\n        { domain_in: $ids }\n        { resolver: \"0x0000000000000000000000000000000000000000\" }\n        { id_gt: $afterCleared }\n      ]\n    }\n  ) {\n    id\n    blockNumber\n    domain { id }\n  }\n}",
+      "variables": {
+        "ids": [
+          "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df",
+          "0x3d8946310840d3d42c6323916d1b53e0481f9623537c3a363bb04345c0be26bc"
+        ],
+        "afterSet": "",
+        "afterCleared": ""
+      }
+    }
+  },
+  "response": {
+    "status": 200,
+    "statusText": "OK",
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "data": {
+        "set": [
+          {
+            "id": "7961489-17",
+            "blockNumber": 7961489,
+            "domain": {
+              "id": "0x3d8946310840d3d42c6323916d1b53e0481f9623537c3a363bb04345c0be26bc"
+            },
+            "resolver": {
+              "address": "0xbd5f5ec7ed5f19b53726344540296c02584a5237"
+            }
+          },
+          {
+            "id": "8775836-114",
+            "blockNumber": 8775836,
+            "domain": {
+              "id": "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9411665-102",
+            "blockNumber": 9411665,
+            "domain": {
+              "id": "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df"
+            },
+            "resolver": {
+              "address": "0x226159d592e2b063810a10ebf6dcbada94ed68b8"
+            }
+          },
+          {
+            "id": "9568521-24",
+            "blockNumber": 9568521,
+            "domain": {
+              "id": "0x4e34d3a81dc3a20f71bbdf2160492ddaa17ee7e5523757d47153379c13cb46df"
+            },
+            "resolver": {
+              "address": "0x4976fb03c32e5b8cfe2b6ccb31c09ba78ebaba41"
+            }
+          }
+        ],
+        "cleared": [
+          {
+            "id": "10000316-85",
+            "blockNumber": 10000316,
+            "domain": {
+              "id": "0x3d8946310840d3d42c6323916d1b53e0481f9623537c3a363bb04345c0be26bc"
+            }
+          }
+        ]
+      }
+    }
+  }
+}

@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "graphql": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

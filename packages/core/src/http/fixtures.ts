@@ -72,9 +72,18 @@ function redactDeep(value: unknown, secrets: readonly string[]): unknown {
   return value;
 }
 
+// Replay reads only these, servers may echo the client IP in others
+const SAVED_RESPONSE_HEADERS = new Set(['content-type', 'retry-after']);
+
 function savedHeaders(headers: Headers): Record<string, string> {
   return Object.fromEntries(
     [...headers].filter(([name]) => name !== 'authorization'),
+  );
+}
+
+function savedResponseHeaders(headers: Headers): Record<string, string> {
+  return Object.fromEntries(
+    [...headers].filter(([name]) => SAVED_RESPONSE_HEADERS.has(name)),
   );
 }
 
@@ -163,7 +172,7 @@ export function createFixtureFetch(opts: {
       response: {
         status: response.status,
         statusText: response.statusText,
-        headers: savedHeaders(response.headers),
+        headers: savedResponseHeaders(response.headers),
         ...(responseBody.ok ? { body: responseBody.value } : { text }),
       },
     };
