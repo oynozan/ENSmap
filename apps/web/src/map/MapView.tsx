@@ -1,7 +1,7 @@
 import type { Graph } from '@ensmap/core/schema';
 import { select } from 'd3-selection';
 import { zoom, zoomIdentity, type D3ZoomEvent } from 'd3-zoom';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 
 import { fitTransform, screenToWorld } from './camera.ts';
 import { createCanvasRenderer } from './canvasRenderer.ts';
@@ -14,11 +14,19 @@ import { createWorkerLayout } from './workerLayout.ts';
 const LABEL_FONT = "200 12px 'Lexend Deca Variable'";
 // Pixels a press may move and still count as a click rather than a pan
 const CLICK_DISTANCE = 4;
+// Room kept around a revealed bubble for its label
+const REVEAL_MARGIN = 24;
 const NO_HIGHLIGHT: ReadonlySet<number> = new Set();
 const EMPTY_MODEL: MapModel = { nodes: [], links: [], indexById: new Map() };
 
+// Where an element over the map starts, in the map's own coordinates
+interface Cover {
+  left: number;
+  top: number;
+}
+
 interface MapController {
-  setSelected(id: string | null): void;
+  setSelected(id: string | null, cover: Cover | null): void;
   setFocused(id: string | null): void;
   destroy(): void;
 }
@@ -47,6 +55,7 @@ function createMapController(
   let userMoved = false;
   let settled = false;
   let announced = false;
+  let destroyed = false;
   let frameRequest = 0;
 
   const indexOf = (id: string | null) =>
@@ -54,7 +63,7 @@ function createMapController(
 
   function draw(): void {
     frameRequest = 0;
-    if (size.width === 0 || size.height === 0) return;
+    if (destroyed || size.width === 0 || size.height === 0) return;
     const ready = positions !== null && fontsReady;
     // Until then an empty frame paints the ground over the opaque canvas
     renderer.draw({
@@ -82,6 +91,8 @@ function createMapController(
     .scaleExtent(ZOOM_EXTENT)
     .clickDistance(CLICK_DISTANCE)
     .on('zoom', (event: D3ZoomEvent<HTMLCanvasElement, unknown>) => {
+      // A drag or wheel gesture outlives destroy() until its mouseup or timeout
+      if (destroyed) return;
       const { x, y, k } = event.transform;
       transform = { x, y, k };
       // Programmatic fits have no source event
@@ -103,6 +114,50 @@ function createMapController(
     );
   }
 
+  // The larger strip a cover leaves free, left of a side panel or above a bottom sheet
+  function visibleArea(cover: Cover | null): { width: number; height: number } {
+    if (cover === null) return size;
+    const left = {
+      width: Math.min(size.width, cover.left),
+      height: size.height,
+    };
+    const above = {
+      width: size.width,
+      height: Math.min(size.height, cover.top),
+    };
+    return left.width * left.height >= above.width * above.height
+      ? left
+      : above;
+  }
+
+  // Pans a selection into view, or out from under a cover, at the same zoom
+  function reveal(index: number, cover: Cover | null): void {
+    const node = model.nodes[index];
+    const area = visibleArea(cover);
+    if (positions === null || node === undefined) return;
+    if (area.width <= 0 || area.height <= 0) return;
+    const { x: tx, y: ty, k } = transform;
+    const x = tx + (positions[2 * index] ?? 0) * k;
+    const y = ty + (positions[2 * index + 1] ?? 0) * k;
+    const r = node.radius * k + REVEAL_MARGIN;
+    if (
+      x - r >= 0 &&
+      x + r <= area.width &&
+      y - r >= 0 &&
+      y + r <= area.height
+    ) {
+      return;
+    }
+    // Otherwise the next layout tick would fit the camera back over the cover
+    userMoved = true;
+    zoomBehavior.transform(
+      canvasSelection,
+      zoomIdentity
+        .translate(tx + area.width / 2 - x, ty + area.height / 2 - y)
+        .scale(k),
+    );
+  }
+
   const stopListening = layout.onPositions((next, done) => {
     positions = next;
     settled ||= done;
@@ -110,15 +165,30 @@ function createMapController(
     invalidate();
   });
 
-  const observer = new ResizeObserver(() => {
+  function resize(): void {
     size = { width: container.clientWidth, height: container.clientHeight };
     renderer.resize(size.width, size.height, devicePixelRatio);
     fit();
     // Resizing clears the canvas, so repaint before this frame is shown
     cancelAnimationFrame(frameRequest);
     draw();
-  });
+  }
+
+  const observer = new ResizeObserver(resize);
   observer.observe(container);
+
+  // Moving the window to a screen with another pixel ratio resizes nothing
+  let pixelRatioQuery: MediaQueryList | null = null;
+  function watchPixelRatio(): void {
+    pixelRatioQuery?.removeEventListener('change', onPixelRatioChange);
+    pixelRatioQuery = matchMedia(`(resolution: ${devicePixelRatio}dppx)`);
+    pixelRatioQuery.addEventListener('change', onPixelRatioChange);
+  }
+  function onPixelRatioChange(): void {
+    watchPixelRatio();
+    resize();
+  }
+  watchPixelRatio();
 
   function hitAt(event: MouseEvent): number | null {
     if (positions === null) return null;
@@ -156,7 +226,6 @@ function createMapController(
   canvas.addEventListener('pointerleave', onPointerLeave);
   canvas.addEventListener('click', onClick);
 
-  let destroyed = false;
   void document.fonts
     .load(LABEL_FONT)
     .catch(() => [])
@@ -170,8 +239,9 @@ function createMapController(
   layout.start(model, { reducedMotion });
 
   return {
-    setSelected(id) {
+    setSelected(id, cover) {
       selected = indexOf(id);
+      if (selected !== null) reveal(selected, cover);
       invalidate();
     },
     setFocused(id) {
@@ -183,6 +253,7 @@ function createMapController(
       stopListening();
       layout.stop();
       observer.disconnect();
+      pixelRatioQuery?.removeEventListener('change', onPixelRatioChange);
       cancelAnimationFrame(frameRequest);
       canvasSelection.on('.zoom', null);
       canvas.removeEventListener('pointermove', onPointerMove);
@@ -200,10 +271,11 @@ export function MapView(props: {
   focusedId: string | null;
   onSelect: (id: string | null) => void;
   onReady?: () => void;
+  // An element over the map, such as the details panel, that a selection is panned out from under
+  coveredBy?: RefObject<HTMLElement | null>;
 }) {
-  const { graph, selectedId, focusedId } = props;
+  const { graph, selectedId, focusedId, coveredBy } = props;
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const controllerRef = useRef<MapController | null>(null);
   // The controller outlives renders, so it calls the latest callbacks
   const callbacksRef = useRef(props);
@@ -213,8 +285,12 @@ export function MapView(props: {
 
   useEffect(() => {
     const container = containerRef.current;
-    const canvas = canvasRef.current;
-    if (container === null || canvas === null) return;
+    if (container === null) return;
+    // A canvas per graph, so a gesture still running on the last one cannot reach this one
+    const canvas = document.createElement('canvas');
+    canvas.className = 'map-canvas';
+    canvas.setAttribute('aria-hidden', 'true');
+    container.append(canvas);
     const controller = createMapController(container, canvas, graph, {
       onSelect: (id) => {
         callbacksRef.current.onSelect(id);
@@ -226,21 +302,23 @@ export function MapView(props: {
     controllerRef.current = controller;
     return () => {
       controller.destroy();
+      canvas.remove();
       controllerRef.current = null;
     };
   }, [graph]);
 
   useEffect(() => {
-    controllerRef.current?.setSelected(selectedId);
-  }, [graph, selectedId]);
+    // Offsets rather than a client rect, which the panel's slide-in transform would skew
+    const cover = coveredBy?.current;
+    controllerRef.current?.setSelected(
+      selectedId,
+      cover ? { left: cover.offsetLeft, top: cover.offsetTop } : null,
+    );
+  }, [graph, selectedId, coveredBy]);
 
   useEffect(() => {
     controllerRef.current?.setFocused(focusedId);
   }, [graph, focusedId]);
 
-  return (
-    <div ref={containerRef} className="map-view">
-      <canvas ref={canvasRef} className="map-canvas" aria-hidden="true" />
-    </div>
-  );
+  return <div ref={containerRef} className="map-view" />;
 }

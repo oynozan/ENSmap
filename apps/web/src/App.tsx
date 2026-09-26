@@ -25,6 +25,7 @@ export function App() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const searchRef = useRef<AbortController | null>(null);
+  const panelRef = useRef<HTMLElement>(null);
 
   const showGraph = useCallback((next: Graph | null) => {
     setGraph(next);
@@ -134,6 +135,7 @@ export function App() {
               selectedId={selectedId}
               focusedId={focusedId}
               onSelect={setSelectedId}
+              coveredBy={panelRef}
             />
             <NodeList
               nodes={graph.nodes}
@@ -145,6 +147,7 @@ export function App() {
         )}
         {selected !== undefined && (
           <DetailsPanel
+            ref={panelRef}
             node={selected}
             nodesById={nodesById}
             onSelect={setSelectedId}

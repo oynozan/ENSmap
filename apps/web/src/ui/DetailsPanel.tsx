@@ -1,7 +1,7 @@
 import './DetailsPanel.css';
 
 import type { GraphNode } from '@ensmap/core/schema';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode, type Ref } from 'react';
 
 const COPIED_MS = 1500;
 
@@ -32,6 +32,7 @@ export function DetailsPanel(props: {
   nodesById: ReadonlyMap<string, GraphNode>;
   onSelect: (id: string) => void;
   onClose: () => void;
+  ref?: Ref<HTMLElement>;
 }) {
   const { node, nodesById, onSelect, onClose } = props;
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
@@ -74,7 +75,7 @@ export function DetailsPanel(props: {
   const sharedWith = node.sharedWith ?? [];
 
   return (
-    <aside className="details" aria-label="Name details">
+    <aside ref={props.ref} className="details" aria-label="Name details">
       <header className="details-head">
         <h2 className="details-title">{node.label}</h2>
         <button
