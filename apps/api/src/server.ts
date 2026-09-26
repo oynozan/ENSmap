@@ -1,8 +1,12 @@
-import { loadDotEnv } from '@ensmap/core/config';
+import { loadDotEnv, loadEnv } from '@ensmap/core/config';
 import { serve } from '@hono/node-server';
 
 import { createApp } from './app.ts';
 
+const PORT = 3000;
+
 loadDotEnv();
 
-serve({ fetch: createApp({}).fetch, port: 3000 });
+serve({ fetch: createApp({ env: loadEnv() }).fetch, port: PORT }, () => {
+  console.log(`ENSmap API on http://localhost:${PORT}`);
+});
