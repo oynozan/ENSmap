@@ -1,3 +1,11 @@
+export {
+  bindingStart,
+  deriveBindings,
+  nameMatches,
+  type Binding,
+  type DeriveBindingsInput,
+  type EventPosition,
+} from './bindings.ts';
 export type {
   Address,
   ChildrenPage,
