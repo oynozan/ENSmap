@@ -156,13 +156,18 @@ function treeOf(...nodes: TreeNode[]): NameTree {
   };
 }
 
-// a.r.eth, registered at REGISTERED, owned by O, resolves to W through R
+// a.r.eth, registered at REGISTERED, owned by O, resolves to W via its own R
 function boundNode(
   overrides: { record?: Partial<DomainRecord>; aliasNames?: string[] } = {},
 ): TreeNode {
   return treeNode('a', 'a.r.eth', {
     ...overrides,
-    record: { owner: O, registeredAt: REGISTERED, ...overrides.record },
+    record: {
+      owner: O,
+      indexedResolver: R,
+      registeredAt: REGISTERED,
+      ...overrides.record,
+    },
   });
 }
 
@@ -424,6 +429,29 @@ describe('deriveBindings', () => {
       [],
     );
   });
+
+  it.each([
+    ['another resolver', R2, []],
+    ['no indexed resolver', null, []],
+    ['its own resolver in another casing', R, ['a']],
+  ] as const)(
+    'binds an alias path answered through %s only when it is its own',
+    (_, indexedResolver, expected) => {
+      const node = boundNode({
+        record: { canonicalName: name('a.s.eth'), indexedResolver },
+      });
+      const bindings = derive({
+        tree: treeOf(node),
+        resolutions: new Map([
+          [
+            name('a.r.eth'),
+            { address: W, resolver: R.toUpperCase() as Address },
+          ],
+        ]),
+      });
+      expect(bindings.map((binding) => binding.nameId)).toEqual(expected);
+    },
+  );
 
   it('keeps tree order and lowercases the wallet and resolver', () => {
     const tree = treeOf(treeNode('root', 'r.eth'), boundNode());

@@ -46,9 +46,9 @@ through the Universal Resolver, and prints one indented line per name:
 $ pnpm ensmap tree seller-a.eth -n sepolia-v2
 seller-a.eth · 0xc0f5…9fa6 · verified · home · registry shared with: vet402.eth
   agent-1.seller-a.eth · 0x9335…7244 · verified · home
-  agent-2.seller-a.eth · no wallet · canonical: agent-2.vet402.eth · tags: alias-path
-  atst.seller-a.eth · no wallet · canonical: atst.vet402.eth · tags: alias-path
-  obs.seller-a.eth · no wallet · canonical: obs.vet402.eth · tags: alias-path
+  agent-2.seller-a.eth · no wallet · canonical: agent-2.vet402.eth · tags: alias-path, alias-unresolved
+  atst.seller-a.eth · no wallet · canonical: atst.vet402.eth · tags: alias-path, alias-unresolved
+  obs.seller-a.eth · no wallet · canonical: obs.vet402.eth · tags: alias-path, alias-unresolved
 5 names (indexed: 5) · truncated: no · wallets: 2
 warning: keyless public RPC: rate-limited; set ALCHEMY_API_KEY or RPC_URL_11155111
 API calls: ens-dev-graphql=5, rpc=12
@@ -60,9 +60,11 @@ API calls: ens-dev-graphql=5, rpc=12
   reached through an alias path, `registry shared with: …` for an ENSv2
   registry that parents outside the tree also use, and any tags.
 - Tags: `expired`, `unresolvable` (a label shown as `[labelhash]`),
-  `alias-path`, `index-mismatch` (the index and the resolver disagree on the
-  address of a canonical name), `resolution-error:<error>` and `deleted` (a
-  root with neither owner nor resolver).
+  `alias-path`, `alias-unresolved` (an alias path answered by an ancestor's
+  resolver, so no wallet is bound), `index-mismatch` (the index and the
+  resolver disagree on the address of a canonical name),
+  `resolution-error:<error>` and `deleted` (a root with neither owner nor
+  resolver).
 - The footer reads `N names (indexed: M | ≥M) · truncated: yes|no · wallets: K`,
   followed by warnings. `≥M` means the index total is a lower bound.
 - `--json` prints the whole name map as JSON instead.
@@ -109,9 +111,12 @@ loads it. Secret values are redacted from errors, logs and fixtures.
   through another parent, such as `agent-2.seller-a.eth` for
   `agent-2.vet402.eth`, is not in the index by name and exits `2`. Start from
   the canonical name or from the parent.
-- **Wallets follow the in-scope path.** A child of a shared registry is
-  resolved through the path the walk reached it by, which can differ from
-  its canonical path.
+- **Alias paths bind only their own resolver's answer.** A child of a shared
+  registry is resolved on its in-scope path, the path the walk reached it by,
+  which can differ from its canonical path. When that path falls back to an
+  ancestor's resolver instead of the child's own, the answer is the
+  ancestor's record, so no wallet is bound and the name is tagged
+  `alias-unresolved`.
 - **Truncated walks** can over-report the parents outside the tree that
   share a registry, since the unwalked part of the tree counts as outside.
 - **CCIP-Read gateway calls** time out after 10 s, and the name then gets a

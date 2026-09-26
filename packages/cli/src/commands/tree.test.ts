@@ -131,6 +131,9 @@ describe(
       for (const line of aliased) {
         const label = nodeName(line).split('.')[0] ?? '';
         expect(line).toContain(`canonical: ${label}.vet402.eth`);
+        // Each alias path falls back to seller-a.eth's resolver in the recording
+        expect(line).toContain(' · no wallet · ');
+        expect(line).toContain('tags: alias-path, alias-unresolved');
       }
       // agent-1 is canonical under seller-a.eth itself in the recording
       expect(aliased.map(nodeName)).toEqual([

@@ -11,7 +11,12 @@ import { isResolvable, type InterpretedName } from '../ens/names.ts';
 import type { CallCounter } from '../http/counter.ts';
 import type { ChainReader } from '../rpc/chainReader.ts';
 import type { EnsResolver, Resolution } from '../rpc/ensResolver.ts';
-import { bindingStart, deriveBindings, type Binding } from './bindings.ts';
+import {
+  bindingStart,
+  deriveBindings,
+  isAliasUnresolved,
+  type Binding,
+} from './bindings.ts';
 import { assignHomeNames, type WalletGroup } from './homes.ts';
 import type {
   Address,
@@ -57,9 +62,10 @@ function boundNodes(
   tree: NameTree,
   resolutions: ReadonlyMap<InterpretedName, Resolution>,
 ): TreeNode[] {
-  return [...tree.nodes.values()].filter(
-    (node) => resolutions.get(node.name)?.address != null,
-  );
+  return [...tree.nodes.values()].filter((node) => {
+    const resolution = resolutions.get(node.name);
+    return resolution?.address != null && !isAliasUnresolved(node, resolution);
+  });
 }
 
 // Blocks whose binding start carries no timestamp, as ENSv1 events do not
@@ -114,6 +120,9 @@ function tagsOf(
   const canonical = record.canonicalName;
   if (canonical !== null && canonical !== node.name) {
     tags.push('alias-path');
+  }
+  if (resolution !== undefined && isAliasUnresolved(node, resolution)) {
+    tags.push('alias-unresolved');
   }
   if (resolution?.error != null) {
     tags.push(`resolution-error:${resolution.error}`);

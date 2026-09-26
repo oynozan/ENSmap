@@ -1,10 +1,12 @@
 /*
  * Name to wallet bindings.
  * A node's wallet and effective resolver come from resolving its in-scope
- * path. The binding is verified when the wallet's primary name is one of the
- * node's names, or when the wallet owns the node. Its window starts where the
- * record history last made the wallet the effective value, falling back to
- * the registration date.
+ * path. An alias path answered by a resolver other than the node's indexed
+ * one, such as an ancestor's wildcard fallback, binds nothing, since that
+ * answer is the ancestor's record. The binding is verified when the wallet's
+ * primary name is one of the node's names, or when the wallet owns the node.
+ * Its window starts where the record history last made the wallet the
+ * effective value, falling back to the registration date.
  */
 import type { InterpretedName } from '../ens/names.ts';
 import type {
@@ -127,6 +129,18 @@ export function bindingStart(
   return effective === target ? start : null;
 }
 
+export function isAliasUnresolved(
+  node: TreeNode,
+  resolution: { resolver: Address | null },
+): boolean {
+  const { canonicalName, indexedResolver } = node.record;
+  if (canonicalName === null || canonicalName === node.name) {
+    return false;
+  }
+  const resolved = resolution.resolver && lowerAddress(resolution.resolver);
+  return resolved !== (indexedResolver && lowerAddress(indexedResolver));
+}
+
 export function nameMatches(node: TreeNode, name: InterpretedName): boolean {
   return (
     node.name === name ||
@@ -175,7 +189,11 @@ export function deriveBindings(input: DeriveBindingsInput): Binding[] {
   const bindings: Binding[] = [];
   for (const node of input.tree.nodes.values()) {
     const resolution = input.resolutions.get(node.name);
-    if (resolution === undefined || resolution.address === null) {
+    if (
+      resolution === undefined ||
+      resolution.address === null ||
+      isAliasUnresolved(node, resolution)
+    ) {
       continue;
     }
     const address = lowerAddress(resolution.address);

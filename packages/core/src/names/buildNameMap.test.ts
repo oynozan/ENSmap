@@ -408,8 +408,80 @@ describe('buildNameMap', () => {
     );
 
     expect(result.tree.nodes.get('k')?.name).toBe('k.s.eth');
-    expect(result.tags.get('k')).toEqual(['alias-path']);
+    expect(result.tags.get('k')).toEqual(['alias-path', 'alias-unresolved']);
     expect(result.tree.externalReferrers.get('s')).toEqual(['v.eth']);
+  });
+
+  describe('alias-path children of a shared registry', () => {
+    const OWN = addr('ab');
+
+    // s.eth and v.eth share REG, whose child k is canonical under v.eth
+    function sharedRegistry(
+      k: Partial<FakeDomain>,
+      resolution: { address: Address; resolver: Address },
+    ) {
+      const source = createFakeNameSource({
+        domains: [
+          { id: 's', label: 's', canonicalName: 's.eth', subregistry: REG },
+          { id: 'v', label: 'v', canonicalName: 'v.eth', subregistry: REG },
+          {
+            id: 'k',
+            label: 'k',
+            canonicalName: 'k.v.eth',
+            registry: REG,
+            indexedResolver: OWN,
+            ...k,
+          },
+        ],
+        children: { [REG]: ['k'] },
+        referrers: { [REG]: ['s.eth', 'v.eth'] },
+      });
+      const ens = createFakeEnsResolver({
+        resolutions: { 'k.s.eth': resolution },
+      });
+      return { source, ens, chain: createFakeChainReader() };
+    }
+
+    it('binds no wallet when the path falls back to an ancestor resolver, and tags alias-unresolved', async () => {
+      const world = sharedRegistry({}, { address: W, resolver: R });
+
+      const result = await buildNameMap(
+        depsOf(world),
+        params('s.eth'),
+        new CallCounter(),
+      );
+
+      expect(result.tags.get('k')).toEqual(['alias-path', 'alias-unresolved']);
+      expect(result.bindings).toEqual([]);
+      expect(result.wallets.size).toBe(0);
+      expect(result.resolutions.get(name('k.s.eth'))).toEqual({
+        address: W,
+        resolver: R,
+        error: null,
+      });
+      expect(world.source.calls.map((call) => call.method)).not.toContain(
+        'recordHistory',
+      );
+    });
+
+    it('binds normally when the path is answered by its own indexed resolver', async () => {
+      const world = sharedRegistry(
+        { indexedEthAddress: X },
+        { address: W, resolver: `0x${'AB'.repeat(20)}` },
+      );
+
+      const result = await buildNameMap(
+        depsOf(world),
+        params('s.eth'),
+        new CallCounter(),
+      );
+
+      expect(result.tags.get('k')).toEqual(['alias-path']);
+      expect(result.bindings.map((b) => [b.nameId, b.address])).toEqual([
+        ['k', W],
+      ]);
+      expect(result.wallets.get(W)?.memberNameIds).toEqual(['k']);
+    });
   });
 
   it('tags a root with neither owner nor resolver as deleted and still maps it', async () => {
