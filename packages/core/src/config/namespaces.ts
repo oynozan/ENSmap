@@ -62,7 +62,12 @@ const GRAPHQL_ENS_DEV_LIMITS = limitsWith({ concurrency: 2, minIntervalMs: 0 });
 const KEYLESS_RPC_LIMITS = limitsWith({ concurrency: 2, minIntervalMs: 100 });
 // Chosen default, not brief-pinned: treated as a paid/user-controlled endpoint.
 const PAID_RPC_LIMITS = limitsWith({ concurrency: 4, minIntervalMs: 0 });
-const CCIP_LIMITS = limitsWith({ concurrency: 2, minIntervalMs: 0 });
+// A stalled gateway holds a resolver slot until this timeout
+const CCIP_LIMITS = limitsWith({
+  concurrency: 2,
+  minIntervalMs: 0,
+  timeoutMs: 10_000,
+});
 
 // ---- Secrets --------------------------------------------------------------
 // redact() runs against both the raw request URL in error messages and a

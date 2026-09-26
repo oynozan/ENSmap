@@ -114,8 +114,10 @@ loads it. Secret values are redacted from errors, logs and fixtures.
   its canonical path.
 - **Truncated walks** can over-report the parents outside the tree that
   share a registry, since the unwalked part of the tree counts as outside.
-- **CCIP-Read gateway calls have no timeout yet**, so a hanging gateway can
-  stall a run.
+- **CCIP-Read gateway calls** time out after 10 s, and the name then gets a
+  `resolution-error:<error>` tag. They still bypass the shared HTTP client, so
+  they are neither retried nor recorded as fixtures; routing them through it is
+  planned for Phase 2.
 - **ENSv2 on mainnet.** As of 2026-09-26 ENSv2 is not deployed on mainnet,
   and mainnet names come from the ENSv1 subgraph. Moving mainnet to an
   ENSv2-capable source is configuration (`ENS_SOURCE_KIND_MAINNET`,

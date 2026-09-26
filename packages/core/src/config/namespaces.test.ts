@@ -245,6 +245,12 @@ describe('resolveNamespace', () => {
       expect(ns.ccipLimits.concurrency).toBe(2);
     });
 
+    it('gives CCIP-Read gateway calls a 10 s timeout', () => {
+      const ns = resolveNamespace('mainnet', loadEnv({}));
+
+      expect(ns.ccipLimits.timeoutMs).toBe(10_000);
+    });
+
     it('pins the keyless subgraph limits from the brief', () => {
       const ns = resolveNamespace('mainnet', loadEnv({}));
 

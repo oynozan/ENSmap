@@ -2,12 +2,18 @@ import pLimit from 'p-limit';
 import {
   BaseError,
   ContractFunctionRevertedError,
+  decodeAbiParameters,
+  decodeErrorResult,
   encodeErrorResult,
   labelhash,
+  offchainLookupAbiItem,
+  offchainLookupSignature,
   UnknownRpcError,
+  type Hex,
   type PublicClient,
 } from 'viem';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
+import { z } from 'zod';
 
 import { loadEnv, resolveNamespace } from '../config/index.ts';
 import { parseNameInput, type InterpretedName } from '../ens/index.ts';
@@ -345,6 +351,132 @@ describe(
       expect(counter.snapshot()['ccip-gateway']).toBe(1);
       expect(ccip.limited).toBe(1);
       expect(fixtureMisses).toBe(0);
+    });
+  },
+);
+
+/* CCIP-Read gateway timeout */
+
+const CCIP_TIMEOUT_MS = 50;
+const EthCall = z.looseObject({
+  id: z.number(),
+  method: z.literal('eth_call'),
+  params: z.tuple([z.looseObject({ data: z.string() })], z.unknown()),
+});
+const RevertReply = z.looseObject({
+  error: z.looseObject({ data: z.string() }),
+});
+
+// Settles only when its caller aborts, like a stalled gateway
+function stalledGateway() {
+  const aborts: string[] = [];
+  const fetch: typeof globalThis.fetch = (_input, init) =>
+    new Promise((_resolve, reject) => {
+      const signal = init?.signal;
+      signal?.addEventListener(
+        'abort',
+        () => {
+          const reason: unknown = signal.reason;
+          aborts.push(reason instanceof Error ? reason.name : String(reason));
+          reject(reason instanceof Error ? reason : new Error(String(reason)));
+        },
+        { once: true },
+      );
+    });
+  return { fetch, aborts };
+}
+
+// Answers the Universal Resolver callback, no fixture holds a timed-out batch
+function callbackAnsweringRpc() {
+  const callbacks = new Set<string>();
+  const batchFailures: (readonly boolean[])[] = [];
+  const fetch: typeof globalThis.fetch = async (input, init) => {
+    const request = new Request(input, init);
+    const call = EthCall.safeParse(await request.clone().json());
+    const data = call.success ? call.data.params[0].data : '';
+    if (call.success && callbacks.has(data.slice(0, 10))) {
+      const [batch] = decodeAbiParameters(
+        [{ type: 'bytes' }, { type: 'bytes' }],
+        `0x${data.slice(10)}`,
+      );
+      const [failures, responses] = decodeAbiParameters(
+        [{ type: 'bool[]' }, { type: 'bytes[]' }],
+        batch,
+      );
+      batchFailures.push(failures);
+      // The Universal Resolver reverts when a batched lookup failed
+      return Response.json({
+        jsonrpc: '2.0',
+        id: call.data.id,
+        error: { code: 3, message: 'execution reverted', data: responses[0] },
+      });
+    }
+    const response = await recorded(request);
+    const reply = RevertReply.safeParse(await response.clone().json());
+    if (
+      reply.success &&
+      reply.data.error.data.startsWith(offchainLookupSignature)
+    ) {
+      const { args } = decodeErrorResult({
+        abi: [offchainLookupAbiItem],
+        data: reply.data.error.data as Hex,
+      });
+      callbacks.add(args[3]);
+    }
+    return response;
+  };
+  return { fetch, batchFailures };
+}
+
+describe(
+  'createEnsResolver with a stalled CCIP-Read gateway',
+  { timeout: mode === 'replay' ? 5_000 : LIVE_TIMEOUT_MS },
+  () => {
+    const gateway = stalledGateway();
+
+    beforeAll(() => {
+      vi.stubGlobal('fetch', gateway.fetch);
+    });
+
+    afterAll(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it('times the gateway out into a per-name error while other names still resolve', async () => {
+      const cfg = {
+        ...MAINNET,
+        ccipLimits: { ...MAINNET.ccipLimits, timeoutMs: CCIP_TIMEOUT_MS },
+      };
+      const rpc = callbackAnsweringRpc();
+      const counter = new CallCounter();
+      const client = createRpcClient(cfg, {
+        rpc: createHttpClient({
+          provider: 'rpc',
+          limits: cfg.rpc.limits,
+          counter,
+          secrets: cfg.secrets,
+          fetch: rpc.fetch,
+          ...(mode === 'replay' ? { sleep: () => Promise.resolve() } : {}),
+        }),
+        ccipLimit: pLimit(cfg.ccipLimits.concurrency),
+        counter,
+      });
+      const resolver = createEnsResolver(client, { concurrency: 4 });
+      const offchain = name('test.offchaindemo.eth');
+      const started = performance.now();
+
+      const result = await resolver.resolve([offchain, name('ens.eth')]);
+
+      expect(performance.now() - started).toBeLessThan(2_000);
+      expect(gateway.aborts).toEqual(['TimeoutError']);
+      // viem's local batch gateway caught the timeout as a failed lookup
+      expect(rpc.batchFailures).toEqual([[true]]);
+      expect(counter.snapshot()['ccip-gateway']).toBe(1);
+      expect(result.get(offchain)?.address).toBeNull();
+      expect(result.get(offchain)?.error).toBe('Error');
+      const ens = result.get(name('ens.eth'));
+      expect(ens?.address).toMatch(ADDRESS);
+      expect(ens?.error).toBeNull();
     });
   },
 );

@@ -79,7 +79,15 @@ export function createRpcClient(
       request: (parameters) =>
         deps.ccipLimit(() => {
           deps.counter.inc('ccip-gateway');
-          return ccipRequest(parameters);
+          const outer = parameters.requestOptions?.signal;
+          const signal = AbortSignal.any([
+            ...(outer ? [outer] : []),
+            AbortSignal.timeout(cfg.ccipLimits.timeoutMs),
+          ]);
+          return ccipRequest({
+            ...parameters,
+            requestOptions: { ...parameters.requestOptions, signal },
+          });
         }),
     },
   });
