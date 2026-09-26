@@ -4,18 +4,9 @@ import {
   type NamespaceId,
 } from '@ensmap/core/config';
 import { parseNameInput, type NameLabelError } from '@ensmap/core/ens';
-import {
-  CallCounter,
-  createFixtureFetch,
-  FIXTURES_DIR,
-  fixtureMode,
-} from '@ensmap/core/http';
-import {
-  buildNameMap,
-  NameNotFoundError,
-  toNameMapJson,
-} from '@ensmap/core/names';
-import { createNamespaceDeps } from '@ensmap/core/sources';
+import { CallCounter } from '@ensmap/core/http';
+import { NameNotFoundError, toNameMapJson } from '@ensmap/core/names';
+import { loadNameMap } from '@ensmap/core/pipeline';
 import { InvalidArgumentError, Option, type Command } from 'commander';
 
 import { CliError } from '../errors.ts';
@@ -66,34 +57,16 @@ async function runTree(
     );
   }
 
-  const fetch = createFixtureFetch({
-    dir: FIXTURES_DIR,
-    mode: fixtureMode(env),
-    secrets: cfg.secrets,
-    inner: deps.fetch,
-  });
-  const nsDeps = createNamespaceDeps(cfg, {
-    counter,
-    fetch,
-    sleep: deps.sleep,
-    now: deps.now,
-  });
-  const now = deps.now ?? Date.now;
-
   let result;
   try {
-    result = await buildNameMap(
-      nsDeps,
-      {
-        namespace: cfg.id,
-        chainId: cfg.chainId,
-        root: parsed.name,
-        fetchCap,
-        maxLevels: cfg.maxLevels,
-        now: () => new Date(now()),
-      },
+    result = await loadNameMap(cfg, parsed.name, {
+      env,
       counter,
-    );
+      fetch: deps.fetch,
+      sleep: deps.sleep,
+      now: deps.now,
+      fetchCap,
+    });
   } catch (error) {
     if (error instanceof NameNotFoundError) {
       throw new CliError(
