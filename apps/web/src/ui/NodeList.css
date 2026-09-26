@@ -1,0 +1,47 @@
+.node-list:not(:focus-within) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.node-list:focus-within {
+  position: absolute;
+  top: 12px;
+  left: 16px;
+  z-index: 3;
+  box-sizing: border-box;
+  width: min(280px, calc(100% - 32px));
+  max-height: min(40vh, 320px);
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--ground);
+}
+
+.node-list ul {
+  margin: 0;
+  padding: 6px 0;
+  list-style: none;
+}
+
+.node-list button {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 4px 14px;
+  border: 0;
+  background: transparent;
+  color: var(--ash);
+  font: 200 14px/1.5 var(--font-display);
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
+
+.node-list button:focus-visible {
+  outline-offset: -2px;
+  color: var(--bone);
+}

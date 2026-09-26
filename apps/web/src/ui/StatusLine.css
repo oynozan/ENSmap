@@ -1,0 +1,53 @@
+.status-line {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  max-width: calc(100% - 32px);
+  color: var(--ash);
+  font: 300 12px/1.5 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+.status-text {
+  margin: 0;
+}
+
+.status-warnings summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.status-warnings summary::-webkit-details-marker {
+  display: none;
+}
+
+.status-warnings summary::before {
+  margin: 0 0.4em;
+  content: '·';
+}
+
+.status-warnings summary:hover,
+.status-warnings[open] summary {
+  color: var(--bone);
+}
+
+.status-warnings ul {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(480px, calc(100vw - 32px));
+  max-height: 40vh;
+  margin: 0;
+  padding: 10px 14px 10px 28px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--ground);
+  overflow-wrap: anywhere;
+}
