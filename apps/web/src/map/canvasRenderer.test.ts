@@ -20,6 +20,8 @@ function fakeContext() {
       if (key in state) return state[key];
       return (...args: unknown[]) => {
         calls.push({ method: key, args, state: { ...state } });
+        // The dash is set by a method, not a property, but later strokes use it
+        if (key === 'setLineDash') state['lineDash'] = args[0];
       };
     },
     set(_target, key, value) {
@@ -98,6 +100,41 @@ function draw(extra: Partial<Frame> = {}) {
 const named = (calls: Call[], method: string) =>
   calls.filter((c) => c.method === method);
 
+interface Paint {
+  x: unknown;
+  y: unknown;
+  r: unknown;
+  state: Record<string, unknown>;
+}
+
+// Each stroke or fill of a circle, keyed by the centre and radius of its arc
+function circlePaints(calls: Call[], method: 'stroke' | 'fill'): Paint[] {
+  const paints: Paint[] = [];
+  let arc: unknown[] | null = null;
+  for (const call of calls) {
+    if (call.method === 'beginPath') arc = null;
+    if (call.method === 'arc') arc = call.args;
+    if (call.method === method && arc !== null) {
+      paints.push({ x: arc[0], y: arc[1], r: arc[2], state: call.state });
+    }
+  }
+  return paints;
+}
+
+function paintAt(paints: Paint[], x: number, y: number): Paint {
+  const found = paints.filter((p) => p.x === x && p.y === y);
+  expect(found, `one paint at ${x},${y}`).toHaveLength(1);
+  return found[0] as Paint;
+}
+
+// Screen centres of the four nodes at the default frame's transform
+const AT = {
+  root: [200, 150],
+  verified: [260, 150],
+  unverified: [140, 150],
+  expired: [200, 210],
+} as const;
+
 describe('drawFrame', () => {
   it('clears to the ground colour at the device pixel ratio', () => {
     const calls = draw();
@@ -119,31 +156,41 @@ describe('drawFrame', () => {
   });
 
   it('strokes a verified node in sage', () => {
-    const strokes = named(draw(), 'stroke');
-    expect(strokes.some((c) => c.state['strokeStyle'] === COLORS.sage)).toBe(
-      true,
-    );
+    const strokes = circlePaints(draw(), 'stroke');
+    expect(paintAt(strokes, ...AT.verified).state).toMatchObject({
+      strokeStyle: COLORS.sage,
+      globalAlpha: 1,
+    });
   });
 
   it('strokes an unverified node in bone at 40% alpha', () => {
-    const strokes = named(draw(), 'stroke');
-    expect(
-      strokes.some(
-        (c) =>
-          c.state['strokeStyle'] === COLORS.bone &&
-          c.state['globalAlpha'] === 0.4,
-      ),
-    ).toBe(true);
+    const strokes = circlePaints(draw(), 'stroke');
+    expect(paintAt(strokes, ...AT.unverified).state).toMatchObject({
+      strokeStyle: COLORS.bone,
+      globalAlpha: 0.4,
+    });
   });
 
-  it('dashes a node without a wallet', () => {
-    const dashes = named(draw(), 'setLineDash').map((c) => c.args[0]);
-    expect(dashes).toContainEqual([3, 3]);
+  it('dashes exactly the nodes without a wallet', () => {
+    const strokes = circlePaints(draw(), 'stroke');
+    const dash = (at: readonly [number, number]) =>
+      paintAt(strokes, ...at).state['lineDash'];
+    expect(dash(AT.root)).toEqual([3, 3]);
+    expect(dash(AT.expired)).toEqual([3, 3]);
+    expect(dash(AT.verified)).toEqual([]);
+    expect(dash(AT.unverified)).toEqual([]);
   });
 
-  it('fills an expired dot in coral', () => {
-    const fills = named(draw(), 'fill');
-    expect(fills.some((c) => c.state['fillStyle'] === COLORS.coral)).toBe(true);
+  it("fills one coral dot, at the expired node's top-right", () => {
+    const coral = circlePaints(draw(), 'fill').filter(
+      (p) => p.state['fillStyle'] === COLORS.coral,
+    );
+    expect(coral).toHaveLength(1);
+    expect(coral[0]).toMatchObject({
+      x: 200 + 5 * Math.SQRT1_2,
+      y: 210 - 5 * Math.SQRT1_2,
+      r: 2,
+    });
   });
 
   it('labels only the root when zoomed out with nothing hovered', () => {
@@ -155,6 +202,37 @@ describe('drawFrame', () => {
       fillStyle: COLORS.ash,
       textAlign: 'center',
     });
+  });
+
+  it('strokes a ground halo, undashed, just before each label', () => {
+    const calls = draw({ showAllLabels: true });
+    const fills = calls.flatMap((call, i) =>
+      call.method === 'fillText' ? [i] : [],
+    );
+    expect(fills).toHaveLength(4);
+    for (const i of fills) {
+      const halo = calls[i - 1];
+      expect(halo?.method).toBe('strokeText');
+      expect(halo?.args).toEqual(calls[i]?.args);
+      expect(halo?.state).toMatchObject({
+        strokeStyle: COLORS.ground,
+        lineWidth: 3,
+        lineJoin: 'round',
+        lineDash: [],
+        globalAlpha: 1,
+      });
+    }
+  });
+
+  it('brightens the fill of a hovered node without a wallet', () => {
+    const resting = paintAt(circlePaints(draw(), 'fill'), ...AT.expired);
+    const hovered = paintAt(
+      circlePaints(draw({ hovered: 3 }), 'fill'),
+      ...AT.expired,
+    );
+    expect(resting.state['globalAlpha']).toBe(0.04);
+    expect(hovered.state['globalAlpha']).toBeGreaterThan(0.04);
+    expect(hovered.state['fillStyle']).toBe(COLORS.bone);
   });
 
   it('labels every node when showAllLabels is set', () => {

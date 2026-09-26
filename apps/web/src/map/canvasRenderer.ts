@@ -3,6 +3,8 @@ import type { Frame, MapRenderer, SimNode } from './types.ts';
 
 const EDGE_ALPHA = 0.6;
 const FILL_ALPHA = 0.04;
+// Hover and selection brighten every bubble, dashed ones included
+const EMPHASIZED_FILL_ALPHA = 0.12;
 const UNVERIFIED_ALPHA = 0.4;
 const DASH = [3, 3];
 const NO_DASH: number[] = [];
@@ -10,6 +12,7 @@ const SELECTED_WIDTH = 1.5;
 const EXPIRED_DOT_RADIUS = 2;
 const LABEL_FONT = `200 12px ${FONTS.display}`;
 const LABEL_GAP = 4;
+const HALO_WIDTH = 3;
 const FOCUS_GAP = 4;
 const TAU = Math.PI * 2;
 const DIAGONAL = Math.SQRT1_2;
@@ -81,7 +84,7 @@ export function drawFrame(
 
     ctx.beginPath();
     ctx.arc(x, y, r, 0, TAU);
-    ctx.globalAlpha = FILL_ALPHA;
+    ctx.globalAlpha = emphasized ? EMPHASIZED_FILL_ALPHA : FILL_ALPHA;
     ctx.fillStyle = COLORS.bone;
     ctx.fill();
     ctx.globalAlpha = alpha;
@@ -103,6 +106,11 @@ export function drawFrame(
   ctx.globalAlpha = 1;
   ctx.font = LABEL_FONT;
   ctx.fillStyle = COLORS.ash;
+  // A ground halo keeps edges and outlines from striking through the text
+  ctx.strokeStyle = COLORS.ground;
+  ctx.lineWidth = HALO_WIDTH;
+  ctx.lineJoin = 'round';
+  ctx.setLineDash(NO_DASH);
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
   for (let i = 0; i < placed; i++) {
@@ -114,11 +122,11 @@ export function drawFrame(
       i === frame.selected ||
       i === frame.focused;
     if (!full && !frame.showAllLabels) continue;
-    ctx.fillText(
-      full ? node.label : node.shortLabel,
-      sx(i),
-      sy(i) + sr(node) + LABEL_GAP,
-    );
+    const text = full ? node.label : node.shortLabel;
+    const x = sx(i);
+    const y = sy(i) + sr(node) + LABEL_GAP;
+    ctx.strokeText(text, x, y);
+    ctx.fillText(text, x, y);
   }
 
   /* Focus ring */
