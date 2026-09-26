@@ -7,3 +7,6 @@ dist/
 .DS_Store
 coverage/
 .data/
+
+# Agent git worktrees (local tooling)
+.claude/worktrees/
