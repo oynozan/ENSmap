@@ -1,0 +1,112 @@
+.search {
+  width: min(560px, calc(100% - 32px));
+  margin: 0 auto;
+}
+
+.search-bar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 6px 0 22px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+}
+
+.search-bar:has(.search-input:focus-visible) {
+  outline: 1px solid var(--bone);
+  outline-offset: 2px;
+}
+
+.search-input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--bone);
+  /* 16px keeps iOS Safari from zooming in on focus */
+  font: 200 16px/1 var(--font-display);
+  letter-spacing: 0.01em;
+}
+
+.search-input::placeholder {
+  color: var(--ash);
+  opacity: 1;
+}
+
+.search-input:focus-visible {
+  outline: none;
+}
+
+.search-button {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  margin-left: 8px;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ash);
+  cursor: pointer;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease;
+}
+
+.search-button:hover:not(:disabled) {
+  border-color: var(--ash);
+  color: var(--bone);
+}
+
+.search-button:disabled {
+  cursor: default;
+}
+
+.search-button[aria-busy='true']::after {
+  position: absolute;
+  inset: -1px;
+  box-sizing: border-box;
+  border: 1px solid transparent;
+  border-top-color: var(--bone);
+  border-radius: 50%;
+  content: '';
+  animation: search-spin 0.9s linear infinite;
+}
+
+@keyframes search-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search-button[aria-busy='true'] .search-icon {
+    visibility: hidden;
+  }
+
+  .search-button[aria-busy='true']::after {
+    display: grid;
+    place-items: center;
+    border: 0;
+    color: var(--bone);
+    content: '…';
+    font: 300 14px/1 var(--font-ui);
+  }
+}
+
+.search-error {
+  margin: 10px 0 0;
+  padding: 0 22px;
+  color: var(--coral);
+  font: 200 13px/1.4 var(--font-ui);
+  text-align: center;
+}
